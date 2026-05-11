@@ -1,0 +1,39 @@
+import '../entities/product_entity.dart';
+import '../repositories/product_repository.dart';
+
+class GetProductsUseCase {
+  final ProductRepository _r;
+  const GetProductsUseCase(this._r);
+  Future<List<ProductEntity>> call() => _r.getAll();
+}
+
+class GetProductByIdUseCase {
+  final ProductRepository _r;
+  const GetProductByIdUseCase(this._r);
+  Future<ProductEntity> call(String id) => _r.getById(id);
+}
+
+class SearchProductsUseCase {
+  final ProductRepository _r;
+  const SearchProductsUseCase(this._r);
+  Future<List<ProductEntity>> call(String name) => _r.search(name);
+}
+
+class CreateProductUseCase {
+  final ProductRepository _r;
+  const CreateProductUseCase(this._r);
+  Future<ProductEntity> call(Map<String, dynamic> data) => _r.create(data);
+}
+
+class UpdateProductUseCase {
+  final ProductRepository _r;
+  const UpdateProductUseCase(this._r);
+  Future<ProductEntity> call(String id, Map<String, dynamic> data) =>
+      _r.update(id, data);
+}
+
+class DeactivateProductUseCase {
+  final ProductRepository _r;
+  const DeactivateProductUseCase(this._r);
+  Future<void> call(String id) => _r.deactivate(id);
+}
