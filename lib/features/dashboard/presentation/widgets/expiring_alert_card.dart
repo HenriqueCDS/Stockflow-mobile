@@ -1,10 +1,12 @@
 // Novo – não existe no React (wireframe: vencendo em breve)
+// Recebe ProductEntity (mesma fonte usada em Alerts) pois o /dashboard da API
+// só devolve a CONTAGEM de itens em baixa/sem estoque, não a lista deles.
 import 'package:flutter/material.dart';
 import 'package:homestock_mobile/core/theme/app_colors.dart';
-import '../../domain/entities/general_report_entity.dart';
+import '../../../stock/domain/entities/product_entity.dart';
 
 class LowStockAlertCard extends StatelessWidget {
-  final List<LowStockProductEntity> products;
+  final List<ProductEntity> products;
   final String title;
   final Color color;
   final Color bgColor;
@@ -77,7 +79,7 @@ class LowStockAlertCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${p.quantityInStock} un',
+                        '${p.displayStock} un',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,

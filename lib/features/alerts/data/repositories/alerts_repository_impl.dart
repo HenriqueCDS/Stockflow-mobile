@@ -18,62 +18,34 @@ class AlertsRepositoryImpl implements AlertsRepository {
   }
 
   List<AlertEntity> _buildFromProducts(List<ProductEntity> products) {
+    // API não expõe data de validade no produto — só estoque atual/mínimo,
+    // então só dá para derivar alertas de falta/baixo estoque por aqui.
     final alerts = <AlertEntity>[];
-    final today = DateTime.now();
 
     for (final p in products) {
-      // Out-of-stock (critical)
-      if (p.quantityInStock == 0) {
+      if (p.isOutOfStock) {
         alerts.add(AlertEntity(
           productId: p.id,
           productName: p.name,
-          productSku: p.sku,
+          productSku: p.ean ?? '',
           type: AlertType.outOfStock,
           severity: AlertSeverity.critical,
-          quantityInStock: p.quantityInStock,
-          minimumStock: p.minimumStock,
+          quantityInStock: p.currentStock.round(),
+          minimumStock: p.minimumStock?.round(),
         ));
         continue;
       }
 
-      // Low stock (warning)
       if (p.isLowStock) {
         alerts.add(AlertEntity(
           productId: p.id,
           productName: p.name,
-          productSku: p.sku,
+          productSku: p.ean ?? '',
           type: AlertType.lowStock,
           severity: AlertSeverity.warning,
-          quantityInStock: p.quantityInStock,
-          minimumStock: p.minimumStock,
+          quantityInStock: p.currentStock.round(),
+          minimumStock: p.minimumStock?.round(),
         ));
-      }
-
-      // Expiry alerts
-      if (p.expirationDate != null && p.expirationDate!.isNotEmpty) {
-        final expiry = DateTime.tryParse(p.expirationDate!);
-        if (expiry != null) {
-          final diff = expiry.difference(today).inDays;
-          if (diff < 0) {
-            alerts.add(AlertEntity(
-              productId: p.id,
-              productName: p.name,
-              productSku: p.sku,
-              type: AlertType.expired,
-              severity: AlertSeverity.critical,
-              expirationDate: p.expirationDate,
-            ));
-          } else if (diff <= 30) {
-            alerts.add(AlertEntity(
-              productId: p.id,
-              productName: p.name,
-              productSku: p.sku,
-              type: AlertType.nearExpiry,
-              severity: diff <= 7 ? AlertSeverity.critical : AlertSeverity.warning,
-              expirationDate: p.expirationDate,
-            ));
-          }
-        }
       }
     }
 

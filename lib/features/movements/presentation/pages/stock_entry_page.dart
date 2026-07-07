@@ -118,7 +118,7 @@ class _StockEntryPageState extends ConsumerState<StockEntryPage> {
                             ),
                           ),
                           Text(
-                            'Estoque atual: ${state.selectedProduct!.quantityInStock} unidades',
+                            'Estoque atual: ${state.selectedProduct!.displayStock} unidades',
                             style: const TextStyle(
                               fontSize: 13,
                               color: AppColors.textSecondary,

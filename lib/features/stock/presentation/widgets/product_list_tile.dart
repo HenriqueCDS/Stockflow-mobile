@@ -71,7 +71,7 @@ class ProductListTile extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          product.sku,
+                          product.ean ?? '—',
                           style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textTertiary,
@@ -102,7 +102,7 @@ class ProductListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${product.quantityInStock}',
+                    product.displayStock,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,

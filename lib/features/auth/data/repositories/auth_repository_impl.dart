@@ -17,18 +17,21 @@ class AuthRepositoryImpl implements AuthRepository {
       access: res.accessToken,
       refresh: res.refreshToken,
     );
-    return AuthState.authenticated(res.user.toEntity());
+    return AuthState.authenticated(res.toEntity());
   }
 
   @override
-  Future<void> logout() => _storage.clearAll();
+  Future<void> logout() async {
+    await _ds.logout();
+    await _storage.clearAll();
+  }
 
   @override
   Future<AuthState> restoreSession() async {
     final token = await _storage.getAccessToken();
     if (token == null) return const AuthState.unauthenticated();
-    // TODO: decodificar JWT ou chamar GET /auth/me para validar expiração
-    // Por ora, presença do token = sessão ativa
+    // TODO: decodificar o JWT para restaurar userId/email/role e validar expiração.
+    // A API não expõe endpoint de perfil (/auth/me); por ora, presença do token = sessão ativa.
     return const AuthState.authenticated(
       UserEntity(id: '', email: ''),
     );

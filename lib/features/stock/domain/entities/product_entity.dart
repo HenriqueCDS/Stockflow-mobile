@@ -1,32 +1,40 @@
-// Migrado de: src/pages/Products.jsx (estado local do produto)
-// Campo expirationDate adicionado para suporte a alertas de validade (wireframe)
+// Espelha ProductResponseDTO (GET/PUT /api/v1/products) — API não expõe preço de
+// venda nem data de validade no produto; estoque é ajustado via Stock Movements.
 class ProductEntity {
   final String id;
   final String name;
-  final String sku;
-  final String? description;
+  final String? ean;
   final String? category;
-  final double unitPrice;
-  final int quantityInStock;
-  final int? minimumStock;
-  final bool belowMinimumStock;
+  final String? unit;
+  final double currentStock;
+  final double? averageCost;
+  final double? minimumStock;
+  final double totalValue;
   final bool active;
-  final String? expirationDate; // ISO 8601 opcional
+  final bool belowMinimum;
+  final DateTime? createdAt;
 
   const ProductEntity({
     required this.id,
     required this.name,
-    required this.sku,
-    this.description,
+    this.ean,
     this.category,
-    required this.unitPrice,
-    required this.quantityInStock,
+    this.unit,
+    required this.currentStock,
+    this.averageCost,
     this.minimumStock,
-    this.belowMinimumStock = false,
+    this.totalValue = 0,
     this.active = true,
-    this.expirationDate,
+    this.belowMinimum = false,
+    this.createdAt,
   });
 
-  bool get isOutOfStock => quantityInStock == 0;
-  bool get isLowStock => belowMinimumStock && quantityInStock > 0;
+  bool get isOutOfStock => currentStock <= 0;
+  bool get isLowStock => belowMinimum && currentStock > 0;
+
+  // currentStock/minimumStock vêm como number (podem ter casas decimais
+  // conforme a unidade), mas a UI exibe como contagem quando é inteiro.
+  String get displayStock => currentStock % 1 == 0
+      ? currentStock.toStringAsFixed(0)
+      : currentStock.toStringAsFixed(2);
 }

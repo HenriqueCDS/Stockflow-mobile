@@ -4,19 +4,13 @@ import '../repositories/product_repository.dart';
 class GetProductsUseCase {
   final ProductRepository _r;
   const GetProductsUseCase(this._r);
-  Future<List<ProductEntity>> call() => _r.getAll();
+  Future<List<ProductEntity>> call({String? name}) => _r.getAll(name: name);
 }
 
 class GetProductByIdUseCase {
   final ProductRepository _r;
   const GetProductByIdUseCase(this._r);
   Future<ProductEntity> call(String id) => _r.getById(id);
-}
-
-class SearchProductsUseCase {
-  final ProductRepository _r;
-  const SearchProductsUseCase(this._r);
-  Future<List<ProductEntity>> call(String name) => _r.search(name);
 }
 
 class CreateProductUseCase {

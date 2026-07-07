@@ -61,7 +61,7 @@ class _StockExitPageState extends ConsumerState<StockExitPage> {
     final state = ref.watch(stockExitProvider);
     final qty = int.tryParse(_qtyCtrl.text) ?? 0;
     final wouldGoNegative = state.selectedProduct != null &&
-        qty > state.selectedProduct!.quantityInStock;
+        qty > state.selectedProduct!.currentStock;
 
     return Scaffold(
       appBar: AppBar(
@@ -113,7 +113,7 @@ class _StockExitPageState extends ConsumerState<StockExitPage> {
                       ),
                     ),
                     Text(
-                      'Disponível: ${state.selectedProduct!.quantityInStock} unidades',
+                      'Disponível: ${state.selectedProduct!.displayStock} unidades',
                       style: TextStyle(
                         fontSize: 13,
                         color: state.selectedProduct!.isOutOfStock
@@ -159,8 +159,8 @@ class _StockExitPageState extends ConsumerState<StockExitPage> {
                       final n = int.tryParse(v ?? '');
                       if (n == null || n < 1) return 'Mínimo 1 unidade';
                       if (state.selectedProduct != null &&
-                          n > state.selectedProduct!.quantityInStock) {
-                        return 'Maior que o estoque disponível (${state.selectedProduct!.quantityInStock})';
+                          n > state.selectedProduct!.currentStock) {
+                        return 'Maior que o estoque disponível (${state.selectedProduct!.displayStock})';
                       }
                       return null;
                     },

@@ -1,69 +1,75 @@
-// Espelha o DTO do Spring: GET /api/v1/products e POST /api/v1/products
+// Espelha ProductResponseDTO / ProductRequestDTO do Spring.
+// Resposta vem dentro do envelope ApiResponseDTO (ver core/network/api_response.dart).
 import '../../domain/entities/product_entity.dart';
 
 class ProductModel {
   final String id;
   final String name;
-  final String sku;
-  final String? description;
+  final String? ean;
   final String? category;
-  final double unitPrice;
-  final int quantityInStock;
-  final int? minimumStock;
-  final bool belowMinimumStock;
+  final String? unit;
+  final double currentStock;
+  final double? averageCost;
+  final double? minimumStock;
+  final double totalValue;
   final bool active;
-  final String? expirationDate;
+  final bool belowMinimum;
+  final DateTime? createdAt;
 
   const ProductModel({
     required this.id,
     required this.name,
-    required this.sku,
-    this.description,
+    this.ean,
     this.category,
-    required this.unitPrice,
-    required this.quantityInStock,
+    this.unit,
+    required this.currentStock,
+    this.averageCost,
     this.minimumStock,
-    this.belowMinimumStock = false,
+    this.totalValue = 0,
     this.active = true,
-    this.expirationDate,
+    this.belowMinimum = false,
+    this.createdAt,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
         id: json['id'].toString(),
         name: json['name'] as String,
-        sku: json['sku'] as String,
-        description: json['description'] as String?,
+        ean: json['ean'] as String?,
         category: json['category'] as String?,
-        unitPrice: (json['unitPrice'] as num).toDouble(),
-        quantityInStock: json['quantityInStock'] as int,
-        minimumStock: json['minimumStock'] as int?,
-        belowMinimumStock: json['belowMinimumStock'] as bool? ?? false,
+        unit: json['unit'] as String?,
+        currentStock: (json['currentStock'] as num?)?.toDouble() ?? 0,
+        averageCost: (json['averageCost'] as num?)?.toDouble(),
+        minimumStock: (json['minimumStock'] as num?)?.toDouble(),
+        totalValue: (json['totalValue'] as num?)?.toDouble() ?? 0,
         active: json['active'] as bool? ?? true,
-        expirationDate: json['expirationDate'] as String?,
+        belowMinimum: json['belowMinimum'] as bool? ?? false,
+        createdAt: json['createdAt'] != null
+            ? DateTime.tryParse(json['createdAt'] as String)
+            : null,
       );
 
+  // Espelha ProductRequestDTO: {name, ean, category, unit, minimumStock}.
+  // Estoque/custo não são enviáveis aqui — só via Stock Movements.
   Map<String, dynamic> toJson() => {
         'name': name,
-        'sku': sku,
-        if (description != null) 'description': description,
-        if (category != null) 'category': category,
-        'unitPrice': unitPrice,
-        'quantityInStock': quantityInStock,
+        if (ean != null && ean!.isNotEmpty) 'ean': ean,
+        if (category != null && category!.isNotEmpty) 'category': category,
+        if (unit != null && unit!.isNotEmpty) 'unit': unit,
         if (minimumStock != null) 'minimumStock': minimumStock,
-        if (expirationDate != null) 'expirationDate': expirationDate,
       };
 
   ProductEntity toEntity() => ProductEntity(
         id: id,
         name: name,
-        sku: sku,
-        description: description,
+        ean: ean,
         category: category,
-        unitPrice: unitPrice,
-        quantityInStock: quantityInStock,
+        unit: unit,
+        currentStock: currentStock,
+        averageCost: averageCost,
         minimumStock: minimumStock,
-        belowMinimumStock: belowMinimumStock,
+        totalValue: totalValue,
         active: active,
-        expirationDate: expirationDate,
+        belowMinimum: belowMinimum,
+        createdAt: createdAt,
       );
 }

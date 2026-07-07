@@ -7,8 +7,8 @@ class ProductRepositoryImpl implements ProductRepository {
   ProductRepositoryImpl(this._ds);
 
   @override
-  Future<List<ProductEntity>> getAll() async {
-    final models = await _ds.getAll();
+  Future<List<ProductEntity>> getAll({String? name}) async {
+    final models = await _ds.getAll(name: name);
     return models.map((m) => m.toEntity()).toList();
   }
 
@@ -16,12 +16,6 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<ProductEntity> getById(String id) async {
     final model = await _ds.getById(id);
     return model.toEntity();
-  }
-
-  @override
-  Future<List<ProductEntity>> search(String name) async {
-    final models = await _ds.search(name);
-    return models.map((m) => m.toEntity()).toList();
   }
 
   @override

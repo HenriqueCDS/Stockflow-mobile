@@ -37,13 +37,10 @@ class StockNotifier extends AsyncNotifier<List<ProductEntity>> {
   }
 
   Future<void> search(String query) async {
-    if (query.trim().isEmpty) {
-      return refresh();
-    }
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      final uc = SearchProductsUseCase(ref.read(productRepoProvider));
-      return uc(query);
+      final uc = GetProductsUseCase(ref.read(productRepoProvider));
+      return uc(name: query.trim().isEmpty ? null : query.trim());
     });
   }
 

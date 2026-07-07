@@ -8,6 +8,7 @@ import 'package:homestock_mobile/core/theme/app_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import 'package:homestock_mobile/shared/widgets/app_loading_indicator.dart';
 import 'package:homestock_mobile/shared/widgets/error_state_widget.dart';
+import '../../../stock/presentation/providers/stock_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/stat_card_widget.dart';
 import '../widgets/expiring_alert_card.dart';
@@ -18,13 +19,22 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(dashboardProvider);
+    // /dashboard só devolve a CONTAGEM de itens em baixa/sem estoque; as
+    // prévias com nome+quantidade vêm da lista de produtos já carregada
+    // (mesma fonte usada em Alerts).
+    final products = ref.watch(stockProvider).valueOrNull ?? [];
+    final lowStockPreview = products.where((p) => p.isLowStock).toList();
+    final outOfStockPreview = products.where((p) => p.isOutOfStock).toList();
 
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
           color: AppColors.accent,
           backgroundColor: AppColors.surface,
-          onRefresh: () => ref.read(dashboardProvider.notifier).refresh(),
+          onRefresh: () => Future.wait([
+            ref.read(dashboardProvider.notifier).refresh(),
+            ref.refresh(stockProvider.future),
+          ]),
           child: CustomScrollView(
             slivers: [
               // ── Header ──────────────────────────────────────────────────
@@ -155,7 +165,7 @@ class DashboardPage extends ConsumerWidget {
                           ref.read(dashboardProvider.notifier).refresh(),
                     ),
                   ),
-                  data: (report) => Padding(
+                  data: (dash) => Padding(
                     padding: const EdgeInsets.all(22),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,7 +195,7 @@ class DashboardPage extends ConsumerWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                report.totalStockValue.toBRL(),
+                                dash.totalStockValue.toBRL(),
                                 style: const TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w800,
@@ -209,23 +219,23 @@ class DashboardPage extends ConsumerWidget {
                           children: [
                             StatCardWidget(
                               label: 'Total de produtos',
-                              value: '${report.totalProducts}',
+                              value: '${dash.totalProducts}',
                               highlighted: true,
                               valueColor: AppColors.accent,
                             ),
                             StatCardWidget(
                               label: 'Produtos ativos',
-                              value: '${report.activeProducts}',
+                              value: '${dash.activeProducts}',
                               valueColor: AppColors.good,
                             ),
                             StatCardWidget(
                               label: 'Estoque baixo',
-                              value: '${report.productsWithLowStock}',
+                              value: '${dash.lowStockProducts}',
                               valueColor: AppColors.warn,
                             ),
                             StatCardWidget(
                               label: 'Sem estoque',
-                              value: '${report.productsOutOfStock}',
+                              value: '${outOfStockPreview.length}',
                               valueColor: AppColors.danger,
                             ),
                           ],
@@ -234,21 +244,21 @@ class DashboardPage extends ConsumerWidget {
                         const SizedBox(height: 20),
 
                         // Alertas de estoque baixo
-                        if (report.lowStockProducts.isNotEmpty)
+                        if (lowStockPreview.isNotEmpty)
                           LowStockAlertCard(
                             title: 'ESTOQUE BAIXO',
-                            products: report.lowStockProducts,
+                            products: lowStockPreview,
                             color: AppColors.warn,
                             bgColor: const Color(0x0AFAC775),
                             icon: Icons.warning_amber_rounded,
                             onViewAll: () => context.go('/alerts'),
                           ),
 
-                        if (report.outOfStockProducts.isNotEmpty) ...[
+                        if (outOfStockPreview.isNotEmpty) ...[
                           const SizedBox(height: 12),
                           LowStockAlertCard(
                             title: 'SEM ESTOQUE',
-                            products: report.outOfStockProducts,
+                            products: outOfStockPreview,
                             color: AppColors.danger,
                             bgColor: const Color(0x0AEF4F4F),
                             icon: Icons.trending_down_rounded,

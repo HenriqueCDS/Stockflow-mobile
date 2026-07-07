@@ -71,7 +71,7 @@ class _ProductSelectorWidgetState
               if (widget.hideOutOfStock && p.isOutOfStock) return false;
               if (q.isEmpty) return true;
               return p.name.toLowerCase().contains(q) ||
-                  p.sku.toLowerCase().contains(q);
+                  (p.ean?.toLowerCase().contains(q) ?? false);
             }).toList();
 
             if (filtered.isEmpty) {
@@ -127,7 +127,7 @@ class _ProductSelectorWidgetState
                                 ),
                                 const SizedBox(height: 3),
                                 Text(
-                                  'Cód: ${p.sku}',
+                                  'Cód: ${p.ean ?? '—'}',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: AppColors.textTertiary,
@@ -138,7 +138,7 @@ class _ProductSelectorWidgetState
                             ),
                           ),
                           Text(
-                            '${p.quantityInStock} disponíveis',
+                            '${p.displayStock} disponíveis',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,

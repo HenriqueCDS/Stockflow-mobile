@@ -1,5 +1,6 @@
-// Migrado de: src/pages/Products.jsx (formulário inline de create/edit)
-// Formulário inline web → página separada com AppBar (UX mobile)
+// Cadastro/edição de produto — espelha ProductRequestDTO: {name, ean, category, unit, minimumStock}.
+// Preço e quantidade em estoque não são definidos aqui: custo médio é calculado
+// pelo backend a partir dos movimentos e o estoque é ajustado via Entrada/Saída.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +9,6 @@ import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import 'package:homestock_mobile/shared/widgets/app_loading_indicator.dart';
 import '../providers/stock_provider.dart';
 import '../../domain/usecases/get_products_usecase.dart';
-import '../../domain/usecases/get_products_usecase.dart' show CreateProductUseCase, UpdateProductUseCase;
 
 class ProductFormPage extends ConsumerStatefulWidget {
   final String? productId;
@@ -21,11 +21,9 @@ class ProductFormPage extends ConsumerStatefulWidget {
 class _ProductFormPageState extends ConsumerState<ProductFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
-  final _skuCtrl = TextEditingController();
-  final _descCtrl = TextEditingController();
+  final _eanCtrl = TextEditingController();
   final _catCtrl = TextEditingController();
-  final _priceCtrl = TextEditingController();
-  final _qtyCtrl = TextEditingController();
+  final _unitCtrl = TextEditingController();
   final _minCtrl = TextEditingController();
 
   bool _loading = false;
@@ -45,11 +43,9 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
       final uc = GetProductByIdUseCase(ref.read(productRepoProvider));
       final p = await uc(widget.productId!);
       _nameCtrl.text = p.name;
-      _skuCtrl.text = p.sku;
-      _descCtrl.text = p.description ?? '';
+      _eanCtrl.text = p.ean ?? '';
       _catCtrl.text = p.category ?? '';
-      _priceCtrl.text = p.unitPrice.toString();
-      _qtyCtrl.text = p.quantityInStock.toString();
+      _unitCtrl.text = p.unit ?? '';
       _minCtrl.text = p.minimumStock?.toString() ?? '';
     } catch (e) {
       if (mounted) context.showError(e.toString());
@@ -60,7 +56,7 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
 
   @override
   void dispose() {
-    for (final c in [_nameCtrl, _skuCtrl, _descCtrl, _catCtrl, _priceCtrl, _qtyCtrl, _minCtrl]) {
+    for (final c in [_nameCtrl, _eanCtrl, _catCtrl, _unitCtrl, _minCtrl]) {
       c.dispose();
     }
     super.dispose();
@@ -72,12 +68,11 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
 
     final data = {
       'name': _nameCtrl.text.trim(),
-      'sku': _skuCtrl.text.trim(),
-      if (_descCtrl.text.isNotEmpty) 'description': _descCtrl.text.trim(),
-      if (_catCtrl.text.isNotEmpty) 'category': _catCtrl.text.trim(),
-      'unitPrice': double.parse(_priceCtrl.text.replaceAll(',', '.')),
-      'quantityInStock': int.parse(_qtyCtrl.text),
-      if (_minCtrl.text.isNotEmpty) 'minimumStock': int.parse(_minCtrl.text),
+      if (_eanCtrl.text.trim().isNotEmpty) 'ean': _eanCtrl.text.trim(),
+      if (_catCtrl.text.trim().isNotEmpty) 'category': _catCtrl.text.trim(),
+      if (_unitCtrl.text.trim().isNotEmpty) 'unit': _unitCtrl.text.trim(),
+      if (_minCtrl.text.trim().isNotEmpty)
+        'minimumStock': double.parse(_minCtrl.text.replaceAll(',', '.')),
     };
 
     try {
@@ -123,45 +118,31 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                     _field(_nameCtrl, 'Nome do Produto *',
                         validator: (v) =>
                             v!.trim().isEmpty ? 'Informe o nome' : null),
-                    _field(_skuCtrl, 'Código (SKU) *',
-                        hint: 'Ex: ARR-5KG-01',
-                        validator: (v) =>
-                            v!.trim().isEmpty ? 'Informe o SKU' : null),
+                    _field(_eanCtrl, 'Código de Barras (EAN)',
+                        hint: 'Ex: 7891234567890',
+                        type: TextInputType.number),
                     _field(_catCtrl, 'Categoria', hint: 'Ex: Alimentos'),
-                    _field(
-                      _priceCtrl,
-                      'Preço Unitário (R$) *',
-                      hint: '0,00',
-                      type: TextInputType.number,
-                      validator: (v) {
-                        final n = double.tryParse(
-                            v?.replaceAll(',', '.') ?? '');
-                        return n == null || n < 0
-                            ? 'Preço inválido'
-                            : null;
-                      },
-                    ),
-                    _field(
-                      _qtyCtrl,
-                      'Quantidade em Estoque *',
-                      hint: '0',
-                      type: TextInputType.number,
-                      validator: (v) {
-                        final n = int.tryParse(v ?? '');
-                        return n == null || n < 0
-                            ? 'Quantidade inválida'
-                            : null;
-                      },
-                    ),
+                    _field(_unitCtrl, 'Unidade', hint: 'Ex: UN, KG, CX'),
                     _field(
                       _minCtrl,
-                      'Quantidade Mínima',
+                      'Estoque Mínimo',
                       hint: 'Alerta abaixo desse valor',
-                      type: TextInputType.number,
+                      type: const TextInputType.numberWithOptions(decimal: true),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return null;
+                        final n = double.tryParse(v.replaceAll(',', '.'));
+                        return n == null || n < 0 ? 'Valor inválido' : null;
+                      },
                     ),
-                    _field(_descCtrl, 'Descrição',
-                        hint: 'Informações adicionais', maxLines: 3),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 12),
+                    Text(
+                      'O estoque atual é ajustado por Entrada/Saída, não por aqui.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _loading ? null : _submit,
                       child: _loading
