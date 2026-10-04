@@ -52,7 +52,7 @@ class _ConfirmSheet extends StatelessWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.line,
+                color: AppColors.line2,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

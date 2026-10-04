@@ -97,10 +97,10 @@ class _FilterChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: active ? AppColors.accent : AppColors.surface,
+            color: active ? AppColors.accentSoft : AppColors.surface2,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: active ? AppColors.accent : AppColors.line2,
+              color: active ? AppColors.accentLine : AppColors.line,
             ),
           ),
           child: Text(
@@ -108,7 +108,7 @@ class _FilterChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: active ? const Color(0xFF0A0A0A) : AppColors.textSecondary,
+              color: active ? AppColors.accent : AppColors.textSecondary,
             ),
           ),
         ),
