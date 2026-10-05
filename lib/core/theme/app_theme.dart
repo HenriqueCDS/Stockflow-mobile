@@ -2,21 +2,27 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 abstract final class AppTheme {
-  static ThemeData get darkTheme {
+  static ThemeData get lightTheme {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.accent,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
     ).copyWith(
       surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
       primary: AppColors.accent,
-      onPrimary: const Color(0xFF0A0A0A),
+      onPrimary: AppColors.onAccent,
       error: AppColors.danger,
     );
 
-    return ThemeData.dark(useMaterial3: true).copyWith(
+    final base = ThemeData.light(useMaterial3: true);
+
+    return base.copyWith(
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.background,
+      textTheme: base.textTheme.apply(
+        bodyColor: AppColors.textPrimary,
+        displayColor: AppColors.textPrimary,
+      ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
@@ -38,6 +44,10 @@ abstract final class AppTheme {
         ),
         margin: EdgeInsets.zero,
       ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
@@ -45,15 +55,15 @@ abstract final class AppTheme {
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.line),
+          borderSide: const BorderSide(color: AppColors.line2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.line),
+          borderSide: const BorderSide(color: AppColors.line2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.accent),
+          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -61,7 +71,7 @@ abstract final class AppTheme {
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.danger),
+          borderSide: const BorderSide(color: AppColors.danger, width: 1.5),
         ),
         labelStyle: const TextStyle(color: AppColors.textSecondary),
         hintStyle: const TextStyle(color: AppColors.textTertiary),
@@ -70,7 +80,7 @@ abstract final class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.accent,
-          foregroundColor: const Color(0xFF0A0A0A),
+          foregroundColor: AppColors.onAccent,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -85,6 +95,7 @@ abstract final class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.textPrimary,
+          backgroundColor: AppColors.surface,
           side: const BorderSide(color: AppColors.line2),
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
@@ -107,9 +118,9 @@ abstract final class AppTheme {
         ),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.surface2,
+        backgroundColor: AppColors.textPrimary,
         contentTextStyle:
-            const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+            const TextStyle(color: AppColors.background, fontSize: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         behavior: SnackBarBehavior.floating,
       ),

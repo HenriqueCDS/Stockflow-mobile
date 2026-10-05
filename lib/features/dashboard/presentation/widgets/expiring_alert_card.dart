@@ -18,7 +18,7 @@ class LowStockAlertCard extends StatelessWidget {
     required this.products,
     required this.title,
     this.color = AppColors.warn,
-    this.bgColor = const Color(0x0AFAC775),
+    this.bgColor = const Color(0x14D97706),
     this.icon = Icons.warning_amber_rounded,
     this.onViewAll,
   });

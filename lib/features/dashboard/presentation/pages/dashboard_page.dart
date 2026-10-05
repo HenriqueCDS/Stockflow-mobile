@@ -176,10 +176,9 @@ class DashboardPage extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 18),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF1e293b), Color(0xFF334155)],
-                            ),
+                            color: AppColors.accentSoft,
                             borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.accentLine),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,6 +199,7 @@ class DashboardPage extends ConsumerWidget {
                                   fontSize: 32,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -0.5,
+                                  color: AppColors.accent,
                                 ),
                               ),
                             ],
@@ -249,7 +249,7 @@ class DashboardPage extends ConsumerWidget {
                             title: 'ESTOQUE BAIXO',
                             products: lowStockPreview,
                             color: AppColors.warn,
-                            bgColor: const Color(0x0AFAC775),
+                            bgColor: const Color(0x14D97706),
                             icon: Icons.warning_amber_rounded,
                             onViewAll: () => context.go('/alerts'),
                           ),
@@ -260,7 +260,7 @@ class DashboardPage extends ConsumerWidget {
                             title: 'SEM ESTOQUE',
                             products: outOfStockPreview,
                             color: AppColors.danger,
-                            bgColor: const Color(0x0AEF4F4F),
+                            bgColor: const Color(0x14D92D20),
                             icon: Icons.trending_down_rounded,
                             onViewAll: () => context.go('/alerts'),
                           ),
