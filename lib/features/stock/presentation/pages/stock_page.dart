@@ -9,6 +9,7 @@ import 'package:homestock_mobile/shared/widgets/app_loading_indicator.dart';
 import 'package:homestock_mobile/shared/widgets/confirm_bottom_sheet.dart';
 import 'package:homestock_mobile/shared/widgets/empty_state_widget.dart';
 import 'package:homestock_mobile/shared/widgets/error_state_widget.dart';
+import '../../domain/entities/product_entity.dart';
 import '../providers/stock_provider.dart';
 import '../widgets/product_list_tile.dart';
 
@@ -163,16 +164,16 @@ class _StockPageState extends ConsumerState<StockPage> {
                   }
 
                   // Urgência: ordena por criticidade
-                  final sorted = view == StockView.urgency
-                      ? [...products]
-                          ..sort((a, b) {
-                            if (a.isOutOfStock && !b.isOutOfStock) return -1;
-                            if (!a.isOutOfStock && b.isOutOfStock) return 1;
-                            if (a.isLowStock && !b.isLowStock) return -1;
-                            if (!a.isLowStock && b.isLowStock) return 1;
-                            return a.name.compareTo(b.name);
-                          })
-                      : products;
+                  final List<ProductEntity> sorted = List.of(products);
+                  if (view == StockView.urgency) {
+                    sorted.sort((a, b) {
+                      if (a.isOutOfStock && !b.isOutOfStock) return -1;
+                      if (!a.isOutOfStock && b.isOutOfStock) return 1;
+                      if (a.isLowStock && !b.isLowStock) return -1;
+                      if (!a.isLowStock && b.isLowStock) return 1;
+                      return a.name.compareTo(b.name);
+                    });
+                  }
 
                   return RefreshIndicator(
                     color: AppColors.accent,
