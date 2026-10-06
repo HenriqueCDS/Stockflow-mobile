@@ -42,11 +42,17 @@ class GetMovementsUseCase {
   final MovementRepository _r;
   const GetMovementsUseCase(this._r);
 
-  // Retorna últimos 30 dias quando type == null
-  Future<List<MovementEntity>> call({MovementType? type}) {
-    if (type != null) return _r.getByType(type);
-    final now = DateTime.now();
-    final start = now.subtract(const Duration(days: 30));
-    return _r.getByDateRange(start, now);
+  // Sem tipo: últimos 30 dias. Com tipo: todo o histórico daquele tipo.
+  // Filtros feitos no app porque GET /stock-movements não aceita data nem tipo.
+  Future<List<MovementEntity>> call({MovementType? type}) async {
+    final all = await _r.getAll();
+    if (type != null) {
+      return all.where((m) => m.type == type).toList();
+    }
+    final limit = DateTime.now().subtract(const Duration(days: 30));
+    return all.where((m) {
+      final date = DateTime.tryParse(m.movementDate);
+      return date == null || date.isAfter(limit);
+    }).toList();
   }
 }

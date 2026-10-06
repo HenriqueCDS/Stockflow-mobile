@@ -1,7 +1,9 @@
+// Espelha InvoiceResponseDTO / InvoiceItemDTO (resposta dentro do envelope ApiResponseDTO).
 import '../../domain/entities/nfce_result_entity.dart';
 
 class NfceResultModel extends NfceResultEntity {
   const NfceResultModel({
+    required super.id,
     required super.chaveAcesso,
     required super.emitente,
     required super.dataEmissao,
@@ -10,12 +12,13 @@ class NfceResultModel extends NfceResultEntity {
   });
 
   factory NfceResultModel.fromJson(Map<String, dynamic> json) {
-    final rawItens = (json['itens'] as List<dynamic>? ?? []);
+    final rawItens = (json['items'] as List<dynamic>? ?? []);
     return NfceResultModel(
-      chaveAcesso: json['chaveAcesso'] as String? ?? '',
-      emitente: json['emitente'] as String? ?? '',
-      dataEmissao: json['dataEmissao'] as String? ?? '',
-      valorTotal: (json['valorTotal'] as num?)?.toDouble() ?? 0,
+      id: json['id'].toString(),
+      chaveAcesso: json['invoiceKey'] as String? ?? '',
+      emitente: json['supplierName'] as String? ?? '',
+      dataEmissao: json['purchaseDate'] as String? ?? '',
+      valorTotal: (json['totalValue'] as num?)?.toDouble() ?? 0,
       itens: rawItens
           .map((e) => NfceItemModel.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -35,12 +38,12 @@ class NfceItemModel extends NfceItemEntity {
 
   factory NfceItemModel.fromJson(Map<String, dynamic> json) {
     return NfceItemModel(
-      descricao: json['descricao'] as String? ?? '',
-      ean: json['ean'] as String?,
-      quantidade: (json['quantidade'] as num?)?.toDouble() ?? 1,
-      unidade: json['unidade'] as String? ?? 'UN',
-      valorUnitario: (json['valorUnitario'] as num?)?.toDouble() ?? 0,
-      valorTotal: (json['valorTotal'] as num?)?.toDouble() ?? 0,
+      descricao: json['productName'] as String? ?? '',
+      ean: json['productEan'] as String?,
+      quantidade: (json['quantity'] as num?)?.toDouble() ?? 1,
+      unidade: json['unit'] as String? ?? 'UN',
+      valorUnitario: (json['unitValue'] as num?)?.toDouble() ?? 0,
+      valorTotal: (json['totalValue'] as num?)?.toDouble() ?? 0,
     );
   }
 }

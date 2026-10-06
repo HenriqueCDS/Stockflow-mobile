@@ -2,6 +2,12 @@
 
 Aplicativo mobile em Flutter para controle de estoque doméstico. Os produtos são dados de cupons fiscais: o usuário lê o QR Code da NFC-e (Nota Fiscal de Consumidor Eletrônica) com a câmera e o app registra os itens no estoque.
 
+## Capturas de tela
+
+<p align="center">
+  <img src="docs/screenshots/onboarding.png" alt="Onboarding do HomeStock" width="300">
+</p>
+
 ## Funcionalidades
 
 - **Autenticação**: tela de onboarding e login. A sessão é mantida com token de acesso armazenado de forma segura.
@@ -71,22 +77,34 @@ Cada feature contém:
 
 3. Confirme que o backend está rodando em `http://localhost:8080`.
 
-4. Execute o app:
+4. Se as pastas de plataforma (`android/`, `web/`) não existirem no seu clone, gere-as uma vez:
 
    ```bash
-   flutter run
+   flutter create --platforms=web,android .
    ```
+
+5. Execute o app. Para rodar no navegador, sem emulador:
+
+   ```bash
+   flutter run -d chrome
+   ```
+
+   Para Android, use um emulador ou dispositivo físico com `flutter run`.
 
 ### Configuração da URL da API
 
-A URL base fica em `lib/core/network/dio_client.dart`:
+A URL base fica em `lib/core/network/dio_client.dart`. Ela muda conforme a plataforma:
 
 ```dart
-const _kBaseUrl = 'http://10.0.2.2:8080/api/v1';
+final _kBaseUrl = kIsWeb
+    ? 'http://localhost:8080/api/v1'
+    : 'http://10.0.2.2:8080/api/v1';
 ```
 
 - **Emulador Android**: `10.0.2.2` aponta para o `localhost` da máquina host. Use o valor como está.
 - **Dispositivo físico**: troque pelo IP da máquina na rede local, por exemplo `http://192.168.0.10:8080/api/v1`. O celular e o computador precisam estar na mesma rede.
+
+Na versão web, o backend precisa liberar CORS para a origem do Flutter (por exemplo, `http://localhost:5000`, porta usada por `flutter run -d chrome --web-port 5000`).
 
 Para ambientes diferentes, a recomendação é trocar essa constante por uma variável de ambiente ou por flavors do Flutter.
 
@@ -104,12 +122,12 @@ Este repositório contém somente o aplicativo mobile. A API REST roda em um pro
 | `POST` | `/products` | Cadastro de produto |
 | `PUT` | `/products/{id}` | Edição de produto |
 | `DELETE` | `/products/{id}` | Remoção de produto |
-| `POST` | `/stock/entries` | Registro de entrada |
-| `POST` | `/stock/exits` | Registro de saída |
-| `GET` | `/stock/reports/movements` | Histórico de movimentações |
-| `GET` | `/stock/reports/movements/type/{type}` | Movimentações por tipo |
-| `GET` | `/stock/reports/movements/product/{productId}` | Movimentações por produto |
-| `POST` | `/nfce/process` | Processamento de NFC-e a partir da URL do QR Code |
+| `POST` | `/stock-movements/adjust` | Registro de entrada, saída ou ajuste (`type`: `ENTRY`, `EXIT`, `ADJUSTMENT`, `RETURN`) |
+| `GET` | `/stock-movements` | Histórico de movimentações (filtros de data e tipo são feitos no app) |
+| `GET` | `/stock-movements/product/{productId}` | Movimentações por produto |
+| `POST` | `/nfce/process` | Leitura do QR Code da NFC-e (`qrCode`); a nota fica pendente |
+| `POST` | `/nfce/{invoiceId}/confirm` | Dar entrada: confirma a nota e atualiza o estoque |
+| `POST` | `/nfce/{invoiceId}/reject` | Rejeita a nota pendente |
 
 Todas as requisições, exceto o login, enviam o cabeçalho `Authorization: Bearer <token>`, adicionado automaticamente pelo `AuthInterceptor`. Erros HTTP são convertidos em `Failure` (sem conexão, não autorizado, não encontrado ou erro do servidor), e a mensagem da API é exibida ao usuário quando existe.
 

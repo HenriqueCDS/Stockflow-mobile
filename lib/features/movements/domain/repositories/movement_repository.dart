@@ -15,10 +15,9 @@ abstract interface class MovementRepository {
     String? reference,
   });
 
-  Future<List<MovementEntity>> getByDateRange(
-      DateTime start, DateTime end);
-
-  Future<List<MovementEntity>> getByType(MovementType type);
+  // A API não filtra por data nem por tipo: retorna o histórico e os filtros
+  // são aplicados no app (ver GetMovementsUseCase).
+  Future<List<MovementEntity>> getAll();
 
   Future<List<MovementEntity>> getByProduct(String productId);
 }

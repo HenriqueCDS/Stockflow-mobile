@@ -1,60 +1,57 @@
-// Espelha o DTO de movimentação retornado pelo Spring
+// Espelha StockMovementResponseDTO do Spring (dentro de PageResponseDTO).
 import '../../domain/entities/movement_entity.dart';
 
 class MovementModel {
   final String id;
   final String type;
-  final String movementDate;
+  final String createdAt;
   final String productName;
-  final String productSku;
-  final int quantity;
-  final int quantityBefore;
-  final int quantityAfter;
-  final String? reason;
+  final double quantity;
+  final double stockBefore;
+  final double stockAfter;
+  final String? notes;
   final String? reference;
 
   const MovementModel({
     required this.id,
     required this.type,
-    required this.movementDate,
+    required this.createdAt,
     required this.productName,
-    required this.productSku,
     required this.quantity,
-    required this.quantityBefore,
-    required this.quantityAfter,
-    this.reason,
+    required this.stockBefore,
+    required this.stockAfter,
+    this.notes,
     this.reference,
   });
 
   factory MovementModel.fromJson(Map<String, dynamic> json) => MovementModel(
         id: json['id'].toString(),
-        type: json['type'] as String,
-        movementDate: json['movementDate'] as String,
-        productName: json['productName'] as String,
-        productSku: json['productSku'] as String,
-        quantity: json['quantity'] as int,
-        quantityBefore: json['quantityBefore'] as int,
-        quantityAfter: json['quantityAfter'] as int,
-        reason: json['reason'] as String?,
+        type: json['type'] as String? ?? 'ADJUSTMENT',
+        createdAt: json['createdAt'] as String? ?? '',
+        productName: json['productName'] as String? ?? '',
+        quantity: (json['quantity'] as num?)?.toDouble() ?? 0,
+        stockBefore: (json['stockBefore'] as num?)?.toDouble() ?? 0,
+        stockAfter: (json['stockAfter'] as num?)?.toDouble() ?? 0,
+        notes: json['notes'] as String?,
         reference: json['reference'] as String?,
       );
 
   MovementEntity toEntity() => MovementEntity(
         id: id,
         type: _parseType(type),
-        movementDate: movementDate,
+        movementDate: createdAt,
         productName: productName,
-        productSku: productSku,
         quantity: quantity,
-        quantityBefore: quantityBefore,
-        quantityAfter: quantityAfter,
-        reason: reason,
+        quantityBefore: stockBefore,
+        quantityAfter: stockAfter,
+        reason: notes,
         reference: reference,
       );
 
   static MovementType _parseType(String t) => switch (t.toUpperCase()) {
         'ENTRY' => MovementType.entry,
         'EXIT' => MovementType.exit,
+        'RETURN' => MovementType.returnType,
         _ => MovementType.adjustment,
       };
 }

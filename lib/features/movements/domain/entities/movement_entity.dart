@@ -1,15 +1,15 @@
 // Migrado de: src/pages/History.jsx (estado local movements)
-enum MovementType { entry, exit, adjustment }
+// Espelha StockMovementResponseDTO. Quantidades são number na API (podem ter decimais).
+enum MovementType { entry, exit, adjustment, returnType }
 
 class MovementEntity {
   final String id;
   final MovementType type;
   final String movementDate;
   final String productName;
-  final String productSku;
-  final int quantity;
-  final int quantityBefore;
-  final int quantityAfter;
+  final double quantity;
+  final double quantityBefore;
+  final double quantityAfter;
   final String? reason;
   final String? reference;
 
@@ -18,7 +18,6 @@ class MovementEntity {
     required this.type,
     required this.movementDate,
     required this.productName,
-    required this.productSku,
     required this.quantity,
     required this.quantityBefore,
     required this.quantityAfter,

@@ -8,7 +8,13 @@ class NfceRepositoryImpl implements NfceRepository {
   const NfceRepositoryImpl(this._ds);
 
   @override
-  Future<NfceResultEntity> processUrl(String url) => _ds.processUrl(url);
+  Future<NfceResultEntity> processUrl(String qrCode) => _ds.processUrl(qrCode);
+
+  @override
+  Future<NfceResultEntity> confirm(String invoiceId) => _ds.confirm(invoiceId);
+
+  @override
+  Future<void> reject(String invoiceId) => _ds.reject(invoiceId);
 }
 
 final nfceRepositoryProvider = Provider<NfceRepository>((ref) {
