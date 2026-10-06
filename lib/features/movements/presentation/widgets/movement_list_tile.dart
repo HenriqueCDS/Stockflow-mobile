@@ -8,12 +8,17 @@ class MovementListTile extends StatelessWidget {
   final MovementEntity movement;
   const MovementListTile({super.key, required this.movement});
 
+  // Inteiro quando não há decimais (ex.: "3"), senão com até 3 casas (ex.: "1.5").
+  static String _fmt(double v) =>
+      v % 1 == 0 ? v.toStringAsFixed(0) : v.toStringAsFixed(3);
+
   @override
   Widget build(BuildContext context) {
     final (color, icon, label) = switch (movement.type) {
       MovementType.entry => (AppColors.good, Icons.arrow_downward_rounded, 'Entrada'),
       MovementType.exit => (AppColors.danger, Icons.arrow_upward_rounded, 'Saída'),
       MovementType.adjustment => (AppColors.accent, Icons.sync_rounded, 'Ajuste'),
+      MovementType.returnType => (AppColors.accent, Icons.undo_rounded, 'Devolução'),
     };
 
     final sign = movement.type == MovementType.exit ? '-' : '+';
@@ -92,7 +97,7 @@ class MovementListTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '$sign${movement.quantity}',
+                '$sign${_fmt(movement.quantity)}',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -100,7 +105,7 @@ class MovementListTile extends StatelessWidget {
                 ),
               ),
               Text(
-                '${movement.quantityBefore} → ${movement.quantityAfter}',
+                '${_fmt(movement.quantityBefore)} → ${_fmt(movement.quantityAfter)}',
                 style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textTertiary,
