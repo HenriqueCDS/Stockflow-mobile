@@ -49,6 +49,14 @@ class ScannerNotifier extends Notifier<ScannerState> {
     }
   }
 
+  // Confirma a nota lida (atualiza o estoque no backend).
+  Future<void> confirmResult() async {
+    final invoiceId = state.result?.id;
+    if (invoiceId == null) return;
+    final useCase = ConfirmNfceUseCase(ref.read(nfceRepositoryProvider));
+    await useCase(invoiceId);
+  }
+
   void reset() => state = const ScannerState();
 }
 

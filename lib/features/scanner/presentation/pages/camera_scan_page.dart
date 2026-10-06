@@ -56,11 +56,20 @@ class _CameraScanPageState extends ConsumerState<CameraScanPage> {
           backgroundColor: Colors.transparent,
           builder: (_) => NfceResultBottomSheet(
             result: next.result!,
-            onConfirm: () {
+            onConfirm: () async {
               Navigator.of(context).pop();
-              context.showSuccess('Itens prontos para dar entrada!');
-              ref.read(scannerProvider.notifier).reset();
-              context.pop();
+              try {
+                await ref.read(scannerProvider.notifier).confirmResult();
+                if (!context.mounted) return;
+                context.showSuccess('Entrada registrada no estoque!');
+                ref.read(scannerProvider.notifier).reset();
+                context.pop();
+              } catch (e) {
+                if (!context.mounted) return;
+                context.showError(e.toString());
+                ref.read(scannerProvider.notifier).reset();
+                setState(() => _handled = false);
+              }
             },
             onScanAgain: () {
               Navigator.of(context).pop();

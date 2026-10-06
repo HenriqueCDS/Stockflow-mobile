@@ -1,4 +1,7 @@
+// Espelha InvoiceResponseDTO (POST /api/v1/nfce/process).
+// O id é necessário para confirmar (POST /nfce/{id}/confirm) ou rejeitar a nota.
 class NfceResultEntity {
+  final String id;
   final String chaveAcesso;
   final String emitente;
   final String dataEmissao;
@@ -6,6 +9,7 @@ class NfceResultEntity {
   final List<NfceItemEntity> itens;
 
   const NfceResultEntity({
+    required this.id,
     required this.chaveAcesso,
     required this.emitente,
     required this.dataEmissao,
