@@ -16,12 +16,18 @@ class MovementListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final (color, icon, label) = switch (movement.type) {
       MovementType.entry => (AppColors.good, Icons.arrow_downward_rounded, 'Entrada'),
+      MovementType.used => (AppColors.danger, Icons.check_circle_outline, 'Usado'),
+      MovementType.discarded => (AppColors.danger, Icons.delete_outline, 'Descartado'),
       MovementType.exit => (AppColors.danger, Icons.arrow_upward_rounded, 'Saída'),
       MovementType.adjustment => (AppColors.accent, Icons.sync_rounded, 'Ajuste'),
       MovementType.returnType => (AppColors.accent, Icons.undo_rounded, 'Devolução'),
     };
 
-    final sign = movement.type == MovementType.exit ? '-' : '+';
+    final isNegative = switch (movement.type) {
+      MovementType.exit || MovementType.used || MovementType.discarded => true,
+      _ => false,
+    };
+    final sign = isNegative ? '-' : '+';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

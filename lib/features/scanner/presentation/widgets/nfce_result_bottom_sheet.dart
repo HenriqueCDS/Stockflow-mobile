@@ -1,27 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:homestock_mobile/core/theme/app_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
+import '../../../movements/presentation/widgets/product_selector_widget.dart';
+import '../../../stock/domain/entities/product_entity.dart';
 import '../../domain/entities/nfce_result_entity.dart';
+import '../providers/scanner_provider.dart';
 
-class NfceResultBottomSheet extends StatelessWidget {
-  final NfceResultEntity result;
+// Observa scannerProvider diretamente (em vez de receber `result` estático)
+// para re-renderizar a lista de itens após cada revisão (PATCH /items/{id}),
+// já que o bottom sheet fica aberto durante toda a revisão, antes de confirmar.
+class NfceResultBottomSheet extends ConsumerWidget {
   final VoidCallback onConfirm;
   final VoidCallback onScanAgain;
 
   const NfceResultBottomSheet({
     super.key,
-    required this.result,
     required this.onConfirm,
     required this.onScanAgain,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final result = ref.watch(scannerProvider).result;
+    if (result == null) return const SizedBox.shrink();
+
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 0.7,
+      initialChildSize: 0.75,
       minChildSize: 0.4,
-      maxChildSize: 0.92,
+      maxChildSize: 0.95,
       builder: (_, controller) => Container(
         decoration: const BoxDecoration(
           color: AppColors.surface,
@@ -74,6 +82,14 @@ class NfceResultBottomSheet extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Toque em um item para editar, religar a um produto existente ou ignorar.',
+                style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
+              ),
+            ),
             const SizedBox(height: 8),
             const Divider(indent: 20, endIndent: 20),
             Expanded(
@@ -83,34 +99,49 @@ class NfceResultBottomSheet extends StatelessWidget {
                 itemCount: result.itens.length,
                 itemBuilder: (_, i) {
                   final item = result.itens[i];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.descricao,
-                                style: const TextStyle(
-                                    fontSize: 13, fontWeight: FontWeight.w600),
+                  return InkWell(
+                    onTap: () => _openItemEditor(context, ref, result.id, item),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Opacity(
+                        opacity: item.ignored ? 0.45 : 1,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.descricao,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      decoration: item.ignored
+                                          ? TextDecoration.lineThrough
+                                          : null,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${item.quantidade.toStringAsFixed(item.quantidade == item.quantidade.roundToDouble() ? 0 : 3)} ${item.unidade}  ×  ${item.valorUnitario.toBRL()}'
+                                    '${item.ignored ? '  ·  ignorado' : ''}',
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.textSecondary),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                '${item.quantidade.toStringAsFixed(item.quantidade == item.quantidade.roundToDouble() ? 0 : 3)} ${item.unidade}  ×  ${item.valorUnitario.toBRL()}',
-                                style: const TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.textSecondary),
-                              ),
-                            ],
-                          ),
+                            ),
+                            Text(
+                              item.valorTotal.toBRL(),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 13),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(Icons.edit_outlined,
+                                size: 16, color: AppColors.textTertiary),
+                          ],
                         ),
-                        Text(
-                          item.valorTotal.toBRL(),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 13),
-                        ),
-                      ],
+                      ),
                     ),
                   );
                 },
@@ -158,6 +189,174 @@ class NfceResultBottomSheet extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _openItemEditor(
+    BuildContext context,
+    WidgetRef ref,
+    String invoiceId,
+    NfceItemEntity item,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ItemEditorSheet(invoiceId: invoiceId, item: item),
+    );
+  }
+}
+
+class _ItemEditorSheet extends ConsumerStatefulWidget {
+  final String invoiceId;
+  final NfceItemEntity item;
+
+  const _ItemEditorSheet({required this.invoiceId, required this.item});
+
+  @override
+  ConsumerState<_ItemEditorSheet> createState() => _ItemEditorSheetState();
+}
+
+class _ItemEditorSheetState extends ConsumerState<_ItemEditorSheet> {
+  late final _nameCtrl = TextEditingController(text: widget.item.descricao);
+  late final _qtyCtrl =
+      TextEditingController(text: widget.item.quantidade.toString());
+  late bool _ignored = widget.item.ignored;
+  String? _mergeIntoProductId;
+  String? _mergeIntoProductName;
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _qtyCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickMergeProduct() async {
+    ProductEntity? picked;
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+        child: ProductSelectorWidget(
+          selected: null,
+          onSelect: (p) {
+            picked = p;
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+    );
+    if (picked != null) {
+      setState(() {
+        _mergeIntoProductId = picked!.id;
+        _mergeIntoProductName = picked!.name;
+      });
+    }
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    try {
+      final newQty = double.tryParse(_qtyCtrl.text.replaceAll(',', '.'));
+      await ref.read(scannerProvider.notifier).reviewItem(
+            widget.item.id,
+            productName: _nameCtrl.text.trim() != widget.item.descricao
+                ? _nameCtrl.text.trim()
+                : null,
+            mergeIntoProductId: _mergeIntoProductId,
+            quantity: newQty != widget.item.quantidade ? newQty : null,
+            ignored: _ignored != widget.item.ignored ? _ignored : null,
+          );
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) context.showError(e.toString());
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.line2,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Editar item',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _nameCtrl,
+            decoration: const InputDecoration(labelText: 'Nome do produto'),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _qtyCtrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: 'Quantidade'),
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: _pickMergeProduct,
+            icon: const Icon(Icons.link, size: 18),
+            label: Text(
+              _mergeIntoProductName ?? 'Religar a produto existente',
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Ignorar este item'),
+            subtitle: const Text(
+              'Não entra no estoque ao confirmar a nota.',
+              style: TextStyle(fontSize: 12),
+            ),
+            value: _ignored,
+            onChanged: (v) => setState(() => _ignored = v),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: _saving ? null : _save,
+            child: _saving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFF0A0A0A),
+                    ),
+                  )
+                : const Text('Salvar'),
+          ),
+        ],
       ),
     );
   }

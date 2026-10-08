@@ -15,6 +15,24 @@ class NfceRepositoryImpl implements NfceRepository {
 
   @override
   Future<void> reject(String invoiceId) => _ds.reject(invoiceId);
+
+  @override
+  Future<NfceResultEntity> reviewItem(
+    String invoiceId,
+    String itemId, {
+    String? productName,
+    String? mergeIntoProductId,
+    double? quantity,
+    bool? ignored,
+  }) =>
+      _ds.reviewItem(
+        invoiceId,
+        itemId,
+        productName: productName,
+        mergeIntoProductId: mergeIntoProductId,
+        quantity: quantity,
+        ignored: ignored,
+      );
 }
 
 final nfceRepositoryProvider = Provider<NfceRepository>((ref) {

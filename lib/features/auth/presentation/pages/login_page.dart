@@ -2,6 +2,7 @@
 // Wireframe: seção 01-C (login com e-mail/senha + Google)
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:homestock_mobile/core/theme/app_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import '../providers/auth_provider.dart';
@@ -168,6 +169,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   onPressed: () {},
                   icon: const Icon(Icons.g_mobiledata, size: 22),
                   label: const Text('Continuar com Google'),
+                ),
+                const SizedBox(height: 24),
+                Center(
+                  child: GestureDetector(
+                    onTap: () => context.push('/register'),
+                    child: const Text(
+                      'Não tem conta? Criar conta',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

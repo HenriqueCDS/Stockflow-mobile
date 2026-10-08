@@ -5,7 +5,13 @@ Aplicativo mobile em Flutter para controle de estoque doméstico. Os produtos s�
 ## Capturas de tela
 
 <p align="center">
-  <img src="docs/screenshots/onboarding.png" alt="Onboarding do HomeStock" width="300">
+  
+  <img src="docs/screenshots/login.png" alt="Login" width="200">
+  <img src="docs/screenshots/home.png" alt="Início (dashboard)" width="200">
+  <img src="docs/screenshots/stock.png" alt="Estoque" width="200">
+  <img src="docs/screenshots/history.png" alt="Histórico de movimentações" width="200">
+  <img src="docs/screenshots/scanner.png" alt="Scanner de NFC-e" width="200">
+  <img src="docs/screenshots/alerts.png" alt="Alertas" width="200">
 </p>
 
 ## Funcionalidades

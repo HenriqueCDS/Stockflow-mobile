@@ -6,25 +6,23 @@ class DashboardEntity {
   final int totalProducts;
   final int activeProducts;
   final int lowStockProducts;
-  final double totalStockValue;
   final int totalInvoices;
   final int pendingInvoices;
+  final double monthlySpend;
   final List<RecentMovementEntity> recentMovements;
-  final List<TopProductEntity> topProducts;
 
   const DashboardEntity({
     required this.totalProducts,
     required this.activeProducts,
     required this.lowStockProducts,
-    required this.totalStockValue,
     required this.totalInvoices,
     required this.pendingInvoices,
+    required this.monthlySpend,
     required this.recentMovements,
-    required this.topProducts,
   });
 }
 
-enum MovementType { entry, exit, adjustment, returnType }
+enum MovementType { entry, used, discarded, exit, adjustment, returnType }
 
 class RecentMovementEntity {
   final String id;
@@ -39,19 +37,5 @@ class RecentMovementEntity {
     required this.type,
     required this.quantity,
     this.createdAt,
-  });
-}
-
-class TopProductEntity {
-  final String id;
-  final String name;
-  final double currentStock;
-  final double totalValue;
-
-  const TopProductEntity({
-    required this.id,
-    required this.name,
-    required this.currentStock,
-    required this.totalValue,
   });
 }

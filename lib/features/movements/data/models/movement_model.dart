@@ -11,6 +11,7 @@ class MovementModel {
   final double stockAfter;
   final String? notes;
   final String? reference;
+  final String? createdBy;
 
   const MovementModel({
     required this.id,
@@ -22,6 +23,7 @@ class MovementModel {
     required this.stockAfter,
     this.notes,
     this.reference,
+    this.createdBy,
   });
 
   factory MovementModel.fromJson(Map<String, dynamic> json) => MovementModel(
@@ -34,6 +36,7 @@ class MovementModel {
         stockAfter: (json['stockAfter'] as num?)?.toDouble() ?? 0,
         notes: json['notes'] as String?,
         reference: json['reference'] as String?,
+        createdBy: json['createdBy'] as String?,
       );
 
   MovementEntity toEntity() => MovementEntity(
@@ -46,10 +49,13 @@ class MovementModel {
         quantityAfter: stockAfter,
         reason: notes,
         reference: reference,
+        createdBy: createdBy,
       );
 
   static MovementType _parseType(String t) => switch (t.toUpperCase()) {
         'ENTRY' => MovementType.entry,
+        'USED' => MovementType.used,
+        'DISCARDED' => MovementType.discarded,
         'EXIT' => MovementType.exit,
         'RETURN' => MovementType.returnType,
         _ => MovementType.adjustment,

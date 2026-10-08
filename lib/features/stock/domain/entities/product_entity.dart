@@ -1,5 +1,5 @@
 // Espelha ProductResponseDTO (GET/PUT /api/v1/products) — API não expõe preço de
-// venda nem data de validade no produto; estoque é ajustado via Stock Movements.
+// venda, custo médio nem valor de estoque; estoque é ajustado via Stock Movements.
 class ProductEntity {
   final String id;
   final String name;
@@ -7,12 +7,11 @@ class ProductEntity {
   final String? category;
   final String? unit;
   final double currentStock;
-  final double? averageCost;
   final double? minimumStock;
-  final double totalValue;
   final bool active;
   final bool belowMinimum;
   final DateTime? createdAt;
+  final String? createdBy;
 
   const ProductEntity({
     required this.id,
@@ -21,12 +20,11 @@ class ProductEntity {
     this.category,
     this.unit,
     required this.currentStock,
-    this.averageCost,
     this.minimumStock,
-    this.totalValue = 0,
     this.active = true,
     this.belowMinimum = false,
     this.createdAt,
+    this.createdBy,
   });
 
   bool get isOutOfStock => currentStock <= 0;

@@ -6,4 +6,6 @@ abstract interface class ProductRepository {
   Future<ProductEntity> create(Map<String, dynamic> data);
   Future<ProductEntity> update(String id, Map<String, dynamic> data);
   Future<void> deactivate(String id);
+  Future<void> use(String id, {double quantity = 1});
+  Future<void> discard(String id, {double quantity = 1});
 }

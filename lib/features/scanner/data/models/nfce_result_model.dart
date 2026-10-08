@@ -28,22 +28,28 @@ class NfceResultModel extends NfceResultEntity {
 
 class NfceItemModel extends NfceItemEntity {
   const NfceItemModel({
+    required super.id,
     required super.descricao,
     super.ean,
+    super.productId,
     required super.quantidade,
     required super.unidade,
     required super.valorUnitario,
     required super.valorTotal,
+    super.ignored,
   });
 
   factory NfceItemModel.fromJson(Map<String, dynamic> json) {
     return NfceItemModel(
+      id: json['id'].toString(),
       descricao: json['productName'] as String? ?? '',
       ean: json['productEan'] as String?,
+      productId: json['productId']?.toString(),
       quantidade: (json['quantity'] as num?)?.toDouble() ?? 1,
       unidade: json['unit'] as String? ?? 'UN',
       valorUnitario: (json['unitValue'] as num?)?.toDouble() ?? 0,
       valorTotal: (json['totalValue'] as num?)?.toDouble() ?? 0,
+      ignored: json['ignored'] as bool? ?? false,
     );
   }
 }

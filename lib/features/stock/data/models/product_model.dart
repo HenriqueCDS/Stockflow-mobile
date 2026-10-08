@@ -9,12 +9,11 @@ class ProductModel {
   final String? category;
   final String? unit;
   final double currentStock;
-  final double? averageCost;
   final double? minimumStock;
-  final double totalValue;
   final bool active;
   final bool belowMinimum;
   final DateTime? createdAt;
+  final String? createdBy;
 
   const ProductModel({
     required this.id,
@@ -23,12 +22,11 @@ class ProductModel {
     this.category,
     this.unit,
     required this.currentStock,
-    this.averageCost,
     this.minimumStock,
-    this.totalValue = 0,
     this.active = true,
     this.belowMinimum = false,
     this.createdAt,
+    this.createdBy,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
@@ -38,14 +36,13 @@ class ProductModel {
         category: json['category'] as String?,
         unit: json['unit'] as String?,
         currentStock: (json['currentStock'] as num?)?.toDouble() ?? 0,
-        averageCost: (json['averageCost'] as num?)?.toDouble(),
         minimumStock: (json['minimumStock'] as num?)?.toDouble(),
-        totalValue: (json['totalValue'] as num?)?.toDouble() ?? 0,
         active: json['active'] as bool? ?? true,
         belowMinimum: json['belowMinimum'] as bool? ?? false,
         createdAt: json['createdAt'] != null
             ? DateTime.tryParse(json['createdAt'] as String)
             : null,
+        createdBy: json['createdBy'] as String?,
       );
 
   // Espelha ProductRequestDTO: {name, ean, category, unit, minimumStock}.
@@ -65,11 +62,10 @@ class ProductModel {
         category: category,
         unit: unit,
         currentStock: currentStock,
-        averageCost: averageCost,
         minimumStock: minimumStock,
-        totalValue: totalValue,
         active: active,
         belowMinimum: belowMinimum,
         createdAt: createdAt,
+        createdBy: createdBy,
       );
 }

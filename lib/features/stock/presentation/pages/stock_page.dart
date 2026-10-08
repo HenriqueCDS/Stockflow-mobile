@@ -206,6 +206,40 @@ class _StockPageState extends ConsumerState<StockPage> {
                             }
                           }
                         },
+                        onUse: sorted[i].isOutOfStock
+                            ? null
+                            : () async {
+                                try {
+                                  await ref
+                                      .read(stockProvider.notifier)
+                                      .use(sorted[i].id);
+                                  if (context.mounted) {
+                                    context.showSuccess(
+                                        '"${sorted[i].name}" marcado como usado.');
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    context.showError(e.toString());
+                                  }
+                                }
+                              },
+                        onDiscard: sorted[i].isOutOfStock
+                            ? null
+                            : () async {
+                                try {
+                                  await ref
+                                      .read(stockProvider.notifier)
+                                      .discard(sorted[i].id);
+                                  if (context.mounted) {
+                                    context.showSuccess(
+                                        '"${sorted[i].name}" descartado.');
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    context.showError(e.toString());
+                                  }
+                                }
+                              },
                       ),
                     ),
                   );

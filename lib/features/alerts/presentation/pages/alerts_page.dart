@@ -1,6 +1,7 @@
 // Wireframe 04-C: urgency view — lista de alertas agrupada por severidade
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:homestock_mobile/core/theme/app_colors.dart';
 import 'package:homestock_mobile/shared/widgets/app_loading_indicator.dart';
 import 'package:homestock_mobile/shared/widgets/empty_state_widget.dart';
@@ -20,6 +21,11 @@ class AlertsPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Alertas'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_cart_outlined),
+            tooltip: 'Lista de Compras',
+            onPressed: () => context.push('/shopping-list'),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.read(alertsProvider.notifier).refresh(),

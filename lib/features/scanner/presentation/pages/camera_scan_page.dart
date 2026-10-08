@@ -55,7 +55,6 @@ class _CameraScanPageState extends ConsumerState<CameraScanPage> {
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
           builder: (_) => NfceResultBottomSheet(
-            result: next.result!,
             onConfirm: () async {
               Navigator.of(context).pop();
               try {

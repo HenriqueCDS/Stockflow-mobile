@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/domain/entities/user_entity.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
@@ -17,6 +18,8 @@ import '../../features/movements/presentation/pages/history_page.dart';
 import '../../features/scanner/presentation/pages/scanner_landing_page.dart';
 import '../../features/scanner/presentation/pages/camera_scan_page.dart';
 import '../../features/alerts/presentation/pages/alerts_page.dart';
+import '../../features/house/presentation/pages/house_page.dart';
+import '../../features/shopping_list/presentation/pages/shopping_list_page.dart';
 import '../theme/app_colors.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -32,8 +35,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isLoggedIn = authNotifier.value;
       final path = state.uri.path;
-      final isPublic =
-          path.startsWith('/onboarding') || path.startsWith('/login');
+      final isPublic = path.startsWith('/onboarding') ||
+          path.startsWith('/login') ||
+          path.startsWith('/register');
 
       if (!isLoggedIn && !isPublic) return '/login';
       if (isLoggedIn && isPublic) return '/home';
@@ -45,6 +49,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const OnboardingPage(),
       ),
       GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
+      GoRoute(path: '/register', builder: (_, __) => const RegisterPage()),
       // Camera em tela cheia – fora do shell para não mostrar bottom nav
       GoRoute(
         path: '/scan/camera',
@@ -88,6 +93,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(path: '/scan', builder: (_, __) => const ScannerLandingPage()),
           GoRoute(path: '/alerts', builder: (_, __) => const AlertsPage()),
+          GoRoute(path: '/house', builder: (_, __) => const HousePage()),
+          GoRoute(
+            path: '/shopping-list',
+            builder: (_, __) => const ShoppingListPage(),
+          ),
         ],
       ),
     ],
@@ -110,6 +120,7 @@ class MainShell extends StatelessWidget {
     if (currentPath.startsWith('/stock')) return 1;
     if (currentPath.startsWith('/scan')) return 2;
     if (currentPath.startsWith('/alerts')) return 3;
+    if (currentPath.startsWith('/house')) return 4;
     return 0;
   }
 
@@ -129,6 +140,8 @@ class MainShell extends StatelessWidget {
               context.push('/scan/camera');
             case 3:
               context.go('/alerts');
+            case 4:
+              context.go('/house');
           }
         },
       ),
@@ -209,23 +222,13 @@ class _AppBottomNav extends StatelessWidget {
                 current: currentIndex,
                 onTap: onTap,
               ),
-              // "Você" placeholder (perfil – fora do escopo MVP)
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.person_outline,
-                        size: 22, color: AppColors.textTertiary),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Você',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
-                  ],
-                ),
+              _NavTab(
+                icon: Icons.person_outline,
+                activeIcon: Icons.person,
+                label: 'Você',
+                index: 4,
+                current: currentIndex,
+                onTap: onTap,
               ),
             ],
           ),

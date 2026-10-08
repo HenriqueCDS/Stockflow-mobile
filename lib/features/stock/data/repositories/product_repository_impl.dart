@@ -32,4 +32,12 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<void> deactivate(String id) => _ds.deactivate(id);
+
+  @override
+  Future<void> use(String id, {double quantity = 1}) =>
+      _ds.use(id, quantity: quantity);
+
+  @override
+  Future<void> discard(String id, {double quantity = 1}) =>
+      _ds.discard(id, quantity: quantity);
 }

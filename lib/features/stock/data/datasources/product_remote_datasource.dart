@@ -5,6 +5,8 @@
 // POST   /api/v1/products        → ApiResponseDTO<ProductResponseDTO>
 // PUT    /api/v1/products/{id}   → ApiResponseDTO<ProductResponseDTO>
 // DELETE /api/v1/products/{id}   → soft delete
+// POST   /api/v1/products/{id}/use?quantity=1     → ApiResponseDTO<StockMovementResponseDTO>
+// POST   /api/v1/products/{id}/discard?quantity=1 → ApiResponseDTO<StockMovementResponseDTO>
 import 'package:dio/dio.dart';
 import 'package:homestock_mobile/core/network/api_interceptors.dart';
 import 'package:homestock_mobile/core/network/api_response.dart';
@@ -16,6 +18,8 @@ abstract interface class ProductRemoteDataSource {
   Future<ProductModel> create(Map<String, dynamic> data);
   Future<ProductModel> update(String id, Map<String, dynamic> data);
   Future<void> deactivate(String id);
+  Future<void> use(String id, {double quantity = 1});
+  Future<void> discard(String id, {double quantity = 1});
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
@@ -86,6 +90,26 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   Future<void> deactivate(String id) async {
     try {
       await _dio.delete('/products/$id');
+    } on DioException catch (e) {
+      throw dioErrorToFailure(e);
+    }
+  }
+
+  @override
+  Future<void> use(String id, {double quantity = 1}) async {
+    try {
+      await _dio.post('/products/$id/use',
+          queryParameters: {'quantity': quantity});
+    } on DioException catch (e) {
+      throw dioErrorToFailure(e);
+    }
+  }
+
+  @override
+  Future<void> discard(String id, {double quantity = 1}) async {
+    try {
+      await _dio.post('/products/$id/discard',
+          queryParameters: {'quantity': quantity});
     } on DioException catch (e) {
       throw dioErrorToFailure(e);
     }

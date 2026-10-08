@@ -184,7 +184,7 @@ class DashboardPage extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'VALOR TOTAL DO ESTOQUE',
+                                'GASTO DO MÊS',
                                 style: TextStyle(
                                   color: AppColors.textTertiary,
                                   fontSize: 10,
@@ -194,7 +194,7 @@ class DashboardPage extends ConsumerWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                dash.totalStockValue.toBRL(),
+                                dash.monthlySpend.toBRL(),
                                 style: const TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w800,

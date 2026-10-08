@@ -57,6 +57,29 @@ class ScannerNotifier extends Notifier<ScannerState> {
     await useCase(invoiceId);
   }
 
+  // Revisa um item da nota antes de confirmar; atualiza o resultado com a
+  // invoice devolvida pelo backend (já com o item ajustado).
+  Future<void> reviewItem(
+    String itemId, {
+    String? productName,
+    String? mergeIntoProductId,
+    double? quantity,
+    bool? ignored,
+  }) async {
+    final invoiceId = state.result?.id;
+    if (invoiceId == null) return;
+    final useCase = ReviewNfceItemUseCase(ref.read(nfceRepositoryProvider));
+    final updated = await useCase(
+      invoiceId,
+      itemId,
+      productName: productName,
+      mergeIntoProductId: mergeIntoProductId,
+      quantity: quantity,
+      ignored: ignored,
+    );
+    state = state.copyWith(result: updated);
+  }
+
   void reset() => state = const ScannerState();
 }
 

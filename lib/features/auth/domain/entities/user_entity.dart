@@ -27,3 +27,4 @@ class AuthState {
       : user = null,
         isAuthenticated = false;
 }
+ 

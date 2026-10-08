@@ -31,3 +31,17 @@ class DeactivateProductUseCase {
   const DeactivateProductUseCase(this._r);
   Future<void> call(String id) => _r.deactivate(id);
 }
+
+class UseProductUseCase {
+  final ProductRepository _r;
+  const UseProductUseCase(this._r);
+  Future<void> call(String id, {double quantity = 1}) =>
+      _r.use(id, quantity: quantity);
+}
+
+class DiscardProductUseCase {
+  final ProductRepository _r;
+  const DiscardProductUseCase(this._r);
+  Future<void> call(String id, {double quantity = 1}) =>
+      _r.discard(id, quantity: quantity);
+}

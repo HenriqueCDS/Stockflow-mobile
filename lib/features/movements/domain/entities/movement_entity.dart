@@ -1,6 +1,6 @@
 // Migrado de: src/pages/History.jsx (estado local movements)
 // Espelha StockMovementResponseDTO. Quantidades são number na API (podem ter decimais).
-enum MovementType { entry, exit, adjustment, returnType }
+enum MovementType { entry, used, discarded, exit, adjustment, returnType }
 
 class MovementEntity {
   final String id;
@@ -12,6 +12,7 @@ class MovementEntity {
   final double quantityAfter;
   final String? reason;
   final String? reference;
+  final String? createdBy;
 
   const MovementEntity({
     required this.id,
@@ -23,5 +24,6 @@ class MovementEntity {
     required this.quantityAfter,
     this.reason,
     this.reference,
+    this.createdBy,
   });
 }

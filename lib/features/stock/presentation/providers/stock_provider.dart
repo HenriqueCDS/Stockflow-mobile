@@ -49,6 +49,18 @@ class StockNotifier extends AsyncNotifier<List<ProductEntity>> {
     await uc(id);
     await refresh();
   }
+
+  Future<void> use(String id, {double quantity = 1}) async {
+    final uc = UseProductUseCase(ref.read(productRepoProvider));
+    await uc(id, quantity: quantity);
+    await refresh();
+  }
+
+  Future<void> discard(String id, {double quantity = 1}) async {
+    final uc = DiscardProductUseCase(ref.read(productRepoProvider));
+    await uc(id, quantity: quantity);
+    await refresh();
+  }
 }
 
 // View ativa da tela de estoque (lista densa / categoria / urgência)
