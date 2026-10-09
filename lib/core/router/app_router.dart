@@ -1,6 +1,6 @@
 // Migrado de: src/App.jsx (Routes) + src/components/Navbar.jsx
 // React Router v6 → go_router ShellRoute
-// Sidebar fixa web → BottomNavigationBar + FAB central (wireframe)
+// Barra inferior (HomeStock.pdf): Início · Estoque · SCAN NFC-E · Lista · Casa
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,7 +20,7 @@ import '../../features/scanner/presentation/pages/camera_scan_page.dart';
 import '../../features/alerts/presentation/pages/alerts_page.dart';
 import '../../features/house/presentation/pages/house_page.dart';
 import '../../features/shopping_list/presentation/pages/shopping_list_page.dart';
-import '../theme/app_colors.dart';
+import '../theme/hs_colors.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authNotifier = ValueNotifier<bool>(false);
@@ -57,6 +57,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           showTutorial: state.uri.queryParameters['tutorial'] == 'true',
         ),
       ),
+      GoRoute(path: '/alerts', builder: (_, __) => const AlertsPage()),
       ShellRoute(
         builder: (context, state, child) => MainShell(
           currentPath: state.uri.path,
@@ -91,8 +92,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          GoRoute(path: '/scan', builder: (_, __) => const ScannerLandingPage()),
-          GoRoute(path: '/alerts', builder: (_, __) => const AlertsPage()),
+          GoRoute(
+              path: '/scan', builder: (_, __) => const ScannerLandingPage()),
           GoRoute(path: '/house', builder: (_, __) => const HousePage()),
           GoRoute(
             path: '/shopping-list',
@@ -119,7 +120,7 @@ class MainShell extends StatelessWidget {
   int get _currentIndex {
     if (currentPath.startsWith('/stock')) return 1;
     if (currentPath.startsWith('/scan')) return 2;
-    if (currentPath.startsWith('/alerts')) return 3;
+    if (currentPath.startsWith('/shopping-list')) return 3;
     if (currentPath.startsWith('/house')) return 4;
     return 0;
   }
@@ -139,7 +140,7 @@ class MainShell extends StatelessWidget {
             case 2:
               context.push('/scan/camera');
             case 3:
-              context.go('/alerts');
+              context.go('/shopping-list');
             case 4:
               context.go('/house');
           }
@@ -157,19 +158,21 @@ class _AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hs = context.hs;
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(top: BorderSide(color: AppColors.line)),
+      decoration: BoxDecoration(
+        color: hs.surface,
+        border: Border(top: BorderSide(color: hs.border)),
       ),
       child: SafeArea(
+        top: false,
         child: SizedBox(
-          height: 64,
+          height: 68,
           child: Row(
             children: [
               _NavTab(
                 icon: Icons.home_outlined,
-                activeIcon: Icons.home,
+                activeIcon: Icons.home_rounded,
                 label: 'Início',
                 index: 0,
                 current: currentIndex,
@@ -183,55 +186,69 @@ class _AppBottomNav extends StatelessWidget {
                 current: currentIndex,
                 onTap: onTap,
               ),
-              // FAB central (wireframe: "SCAN NFC-E")
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => onTap(2),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: AppColors.accent,
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.accent.withOpacity(0.4),
-                              blurRadius: 20,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.qr_code_scanner,
-                          color: Color(0xFF0A0A0A),
-                          size: 24,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              Expanded(child: _ScanButton(onTap: () => onTap(2))),
               _NavTab(
-                icon: Icons.notifications_outlined,
-                activeIcon: Icons.notifications,
-                label: 'Alertas',
+                icon: Icons.checklist_rounded,
+                activeIcon: Icons.checklist_rounded,
+                label: 'Lista',
                 index: 3,
                 current: currentIndex,
                 onTap: onTap,
               ),
               _NavTab(
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
-                label: 'Você',
+                icon: Icons.house_outlined,
+                activeIcon: Icons.house_rounded,
+                label: 'Casa',
                 index: 4,
                 current: currentIndex,
                 onTap: onTap,
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Botão central laranja do scanner NFC-e.
+class _ScanButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _ScanButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final hs = context.hs;
+    return Semantics(
+      button: true,
+      label: 'Escanear NFC-e',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: hs.primary,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: hs.primary.withValues(alpha: 0.4),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.qr_code_scanner,
+                color: hs.onPrimary,
+                size: 24,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -258,28 +275,28 @@ class _NavTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final active = index == current;
+    final color = active ? context.hs.text : context.hs.muted;
     return Expanded(
-      child: GestureDetector(
-        onTap: () => onTap(index),
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              active ? activeIcon : icon,
-              size: 22,
-              color: active ? AppColors.textPrimary : AppColors.textTertiary,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                color:
-                    active ? AppColors.textPrimary : AppColors.textTertiary,
+      child: Semantics(
+        selected: active,
+        button: true,
+        child: InkWell(
+          onTap: () => onTap(index),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(active ? activeIcon : icon, size: 22, color: color),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                  color: color,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
