@@ -83,11 +83,13 @@ Cada feature contém:
 
 3. Confirme que o backend está rodando em `http://localhost:8080`.
 
-4. Se as pastas de plataforma (`android/`, `web/`) não existirem no seu clone, gere-as uma vez:
+4. Se as pastas de plataforma (`android/`, `ios/`, `web/`) não existirem no seu clone, gere-as uma vez (elas não são versionadas):
 
    ```bash
-   flutter create --platforms=web,android .
+   flutter create --platforms=web,android,ios .
    ```
+
+   Depois, aplique a configuração nativa descrita em [Plataformas nativas](#plataformas-nativas).
 
 5. Execute o app. Para rodar no navegador, sem emulador:
 
@@ -96,6 +98,20 @@ Cada feature contém:
    ```
 
    Para Android, use um emulador ou dispositivo físico com `flutter run`.
+
+### Plataformas nativas
+
+Como `android/` e `ios/` são gerados localmente, repita estes ajustes depois do `flutter create`:
+
+- **Android** (`android/app/src/main/AndroidManifest.xml`): dentro de `<manifest>`, antes de `<application>`, adicione as permissões `android.permission.INTERNET` e `android.permission.CAMERA` (scanner de NFC-e) e troque `android:label` por `HomeStock`.
+- **Android, só em debug** (`android/app/src/debug/AndroidManifest.xml`): adicione `<application android:usesCleartextTraffic="true"/>`, porque a API local usa `http://10.0.2.2:8080`.
+- **iOS** (`ios/Runner/Info.plist`): defina `CFBundleDisplayName` como `HomeStock` e adicione `NSCameraUsageDescription` com o motivo do uso da câmera, senão o app fecha ao abrir o scanner.
+- **Ícone e splash** (logo do HomeStock, fontes em `assets/icon/` e `assets/splash/`):
+
+  ```bash
+  dart run flutter_launcher_icons
+  dart run flutter_native_splash:create
+  ```
 
 ### Configuração da URL da API
 
