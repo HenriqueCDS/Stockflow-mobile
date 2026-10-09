@@ -1,6 +1,6 @@
 // Novo – não existe no React como componente Flutter
 import 'package:flutter/material.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 
 class EmptyStateWidget extends StatelessWidget {
   final IconData icon;
@@ -24,14 +24,14 @@ class EmptyStateWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 56, color: AppColors.textTertiary),
+            Icon(icon, size: 56, color: context.hs.muted),
             const SizedBox(height: 20),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: context.hs.text2,
               ),
               textAlign: TextAlign.center,
             ),
@@ -39,9 +39,9 @@ class EmptyStateWidget extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 subtitle!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
-                  color: AppColors.textTertiary,
+                  color: context.hs.muted,
                 ),
                 textAlign: TextAlign.center,
               ),

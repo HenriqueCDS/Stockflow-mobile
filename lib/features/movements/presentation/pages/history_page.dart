@@ -2,7 +2,7 @@
 // Tabela com filtro de tipo → ListView com FilterChips e pull-to-refresh
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import 'package:homestock_mobile/shared/widgets/app_loading_indicator.dart';
 import 'package:homestock_mobile/shared/widgets/empty_state_widget.dart';
 import 'package:homestock_mobile/shared/widgets/error_state_widget.dart';
@@ -29,10 +29,23 @@ class HistoryPage extends ConsumerWidget {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
-                _FilterChip(label: 'Todos', value: null, current: filter, ref: ref),
-                _FilterChip(label: 'Entradas', value: MovementType.entry, current: filter, ref: ref),
-                _FilterChip(label: 'Saídas', value: MovementType.exit, current: filter, ref: ref),
-                _FilterChip(label: 'Ajustes', value: MovementType.adjustment, current: filter, ref: ref),
+                _FilterChip(
+                    label: 'Todos', value: null, current: filter, ref: ref),
+                _FilterChip(
+                    label: 'Entradas',
+                    value: MovementType.entry,
+                    current: filter,
+                    ref: ref),
+                _FilterChip(
+                    label: 'Saídas',
+                    value: MovementType.exit,
+                    current: filter,
+                    ref: ref),
+                _FilterChip(
+                    label: 'Ajustes',
+                    value: MovementType.adjustment,
+                    current: filter,
+                    ref: ref),
               ],
             ),
           ),
@@ -52,8 +65,8 @@ class HistoryPage extends ConsumerWidget {
                       title: 'Nenhuma movimentação encontrada',
                     )
                   : RefreshIndicator(
-                      color: AppColors.accent,
-                      backgroundColor: AppColors.surface,
+                      color: context.hs.primary,
+                      backgroundColor: context.hs.surface,
                       onRefresh: () => ref
                           .read(movementsProvider(filter).notifier)
                           .refresh(),
@@ -97,10 +110,10 @@ class _FilterChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: active ? AppColors.accentSoft : AppColors.surface2,
+            color: active ? context.hs.primarySoft : context.hs.surface2,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: active ? AppColors.accentLine : AppColors.line,
+              color: active ? context.hs.primaryLine : context.hs.border,
             ),
           ),
           child: Text(
@@ -108,7 +121,7 @@ class _FilterChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: active ? AppColors.accent : AppColors.textSecondary,
+              color: active ? context.hs.primary : context.hs.text2,
             ),
           ),
         ),

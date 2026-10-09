@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import 'package:homestock_mobile/shared/widgets/app_loading_indicator.dart';
 import '../providers/stock_provider.dart';
@@ -119,15 +119,15 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                         validator: (v) =>
                             v!.trim().isEmpty ? 'Informe o nome' : null),
                     _field(_eanCtrl, 'Código de Barras (EAN)',
-                        hint: 'Ex: 7891234567890',
-                        type: TextInputType.number),
+                        hint: 'Ex: 7891234567890', type: TextInputType.number),
                     _field(_catCtrl, 'Categoria', hint: 'Ex: Alimentos'),
                     _field(_unitCtrl, 'Unidade', hint: 'Ex: UN, KG, CX'),
                     _field(
                       _minCtrl,
                       'Estoque Mínimo',
                       hint: 'Alerta abaixo desse valor',
-                      type: const TextInputType.numberWithOptions(decimal: true),
+                      type:
+                          const TextInputType.numberWithOptions(decimal: true),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) return null;
                         final n = double.tryParse(v.replaceAll(',', '.'));
@@ -139,19 +139,19 @@ class _ProductFormPageState extends ConsumerState<ProductFormPage> {
                       'O estoque atual é ajustado por Entrada/Saída, não por aqui.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textTertiary,
+                        color: context.hs.muted,
                       ),
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _loading ? null : _submit,
                       child: _loading
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Color(0xFF0A0A0A),
+                                color: context.hs.onPrimary,
                               ),
                             )
                           : Text(

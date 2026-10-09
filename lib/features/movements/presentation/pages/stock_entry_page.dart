@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import '../providers/stock_entry_provider.dart';
 import '../providers/movements_provider.dart';
@@ -97,14 +97,14 @@ class _StockEntryPageState extends ConsumerState<StockEntryPage> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.accentSoft,
+                  color: context.hs.primarySoft,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.accentLine),
+                  border: Border.all(color: context.hs.primaryLine),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.inventory_2_outlined,
-                        color: AppColors.accent, size: 20),
+                    Icon(Icons.inventory_2_outlined,
+                        color: context.hs.primary, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -119,9 +119,9 @@ class _StockEntryPageState extends ConsumerState<StockEntryPage> {
                           ),
                           Text(
                             'Estoque atual: ${state.selectedProduct!.displayStock} unidades',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
-                              color: AppColors.textSecondary,
+                              color: context.hs.text2,
                             ),
                           ),
                         ],
@@ -135,13 +135,13 @@ class _StockEntryPageState extends ConsumerState<StockEntryPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: context.hs.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.line),
+                  border: Border.all(color: context.hs.border),
                 ),
-                child: const Text(
+                child: Text(
                   '↑ Selecione um produto acima',
-                  style: TextStyle(color: AppColors.textTertiary, fontSize: 14),
+                  style: TextStyle(color: context.hs.muted, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -172,9 +172,7 @@ class _StockEntryPageState extends ConsumerState<StockEntryPage> {
                     ),
                     validator: (v) {
                       final n = int.tryParse(v ?? '');
-                      return n == null || n < 1
-                          ? 'Mínimo 1 unidade'
-                          : null;
+                      return n == null || n < 1 ? 'Mínimo 1 unidade' : null;
                     },
                   ),
                   const SizedBox(height: 14),
@@ -200,12 +198,12 @@ class _StockEntryPageState extends ConsumerState<StockEntryPage> {
             ElevatedButton.icon(
               onPressed: state.saving ? null : _submit,
               icon: state.saving
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Color(0xFF0A0A0A),
+                        color: context.hs.onPrimary,
                       ),
                     )
                   : const Icon(Icons.add_box_outlined),

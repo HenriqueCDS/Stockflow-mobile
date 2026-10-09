@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
 
 class ScanBracketPainter extends CustomPainter {
   final bool isActive;
+  final Color activeColor;
 
-  const ScanBracketPainter({this.isActive = false});
+  const ScanBracketPainter({this.isActive = false, required this.activeColor});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = isActive ? AppColors.accent : Colors.white
+      ..color = isActive ? activeColor : Colors.white
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;

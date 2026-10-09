@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import '../providers/auth_provider.dart';
 
@@ -60,14 +60,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       width: 26,
                       height: 26,
                       decoration: BoxDecoration(
-                        color: AppColors.accent,
+                        color: context.hs.primary,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           'H',
                           style: TextStyle(
-                            color: Color(0xFF0A0A0A),
+                            color: context.hs.onPrimary,
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                           ),
@@ -85,10 +85,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ],
                 ),
                 const SizedBox(height: 48),
-                const Text(
+                Text(
                   'ENTRAR',
                   style: TextStyle(
-                    color: AppColors.textTertiary,
+                    color: context.hs.muted,
                     fontSize: 11,
                     letterSpacing: 1.8,
                     fontFamily: 'monospace',
@@ -123,7 +123,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         _obscure
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: AppColors.textTertiary,
+                        color: context.hs.muted,
                         size: 20,
                       ),
                       onPressed: () => setState(() => _obscure = !_obscure),
@@ -136,12 +136,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ElevatedButton(
                   onPressed: loading ? null : _submit,
                   child: loading
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Color(0xFF0A0A0A),
+                            color: context.hs.onPrimary,
                           ),
                         )
                       : const Text('Entrar'),
@@ -155,7 +155,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: Text(
                         'ou',
                         style: TextStyle(
-                          color: AppColors.textTertiary,
+                          color: context.hs.muted,
                           fontSize: 12,
                           fontFamily: 'monospace',
                         ),
@@ -174,10 +174,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 Center(
                   child: GestureDetector(
                     onTap: () => context.push('/register'),
-                    child: const Text(
+                    child: Text(
                       'Não tem conta? Criar conta',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.hs.text2,
                         fontSize: 13,
                       ),
                     ),

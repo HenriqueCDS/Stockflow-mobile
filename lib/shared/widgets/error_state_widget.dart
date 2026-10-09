@@ -1,6 +1,6 @@
 // Novo – tratamento de erros inline no React era inline; aqui é widget reutilizável
 import 'package:flutter/material.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 
 class ErrorStateWidget extends StatelessWidget {
   final String message;
@@ -20,17 +20,17 @@ class ErrorStateWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               size: 48,
-              color: AppColors.danger,
+              color: context.hs.bad,
             ),
             const SizedBox(height: 16),
             Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: context.hs.text2,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,

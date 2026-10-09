@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import '../providers/auth_provider.dart';
 
@@ -109,10 +109,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'CRIAR CONTA',
                     style: TextStyle(
-                      color: AppColors.textTertiary,
+                      color: context.hs.muted,
                       fontSize: 11,
                       letterSpacing: 1.8,
                       fontFamily: 'monospace',
@@ -136,9 +136,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
               padding: const EdgeInsets.symmetric(horizontal: 28),
               child: TabBar(
                 controller: _tabController,
-                labelColor: AppColors.accent,
-                unselectedLabelColor: AppColors.textSecondary,
-                indicatorColor: AppColors.accent,
+                labelColor: context.hs.primary,
+                unselectedLabelColor: context.hs.text2,
+                indicatorColor: context.hs.primary,
                 tabs: const [
                   Tab(text: 'Criar casa nova'),
                   Tab(text: 'Entrar com código'),
@@ -193,7 +193,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
                     _obscureCreate
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textTertiary,
+                    color: context.hs.muted,
                     size: 20,
                   ),
                   onPressed: () =>
@@ -218,12 +218,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
             ElevatedButton(
               onPressed: loading ? null : _submitCreate,
               child: loading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Color(0xFF0A0A0A),
+                        color: context.hs.onPrimary,
                       ),
                     )
                   : const Text('Criar casa e conta'),
@@ -267,11 +267,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
                     _obscureJoin
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textTertiary,
+                    color: context.hs.muted,
                     size: 20,
                   ),
-                  onPressed: () =>
-                      setState(() => _obscureJoin = !_obscureJoin),
+                  onPressed: () => setState(() => _obscureJoin = !_obscureJoin),
                 ),
               ),
               validator: (v) =>
@@ -293,12 +292,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
             ElevatedButton(
               onPressed: loading ? null : _submitJoin,
               child: loading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Color(0xFF0A0A0A),
+                        color: context.hs.onPrimary,
                       ),
                     )
                   : const Text('Entrar na casa'),

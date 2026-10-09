@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import '../../../movements/presentation/widgets/product_selector_widget.dart';
 import '../../../stock/domain/entities/product_entity.dart';
@@ -31,8 +31,8 @@ class NfceResultBottomSheet extends ConsumerWidget {
       minChildSize: 0.4,
       maxChildSize: 0.95,
       builder: (_, controller) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
+        decoration: BoxDecoration(
+          color: context.hs.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -42,7 +42,7 @@ class NfceResultBottomSheet extends ConsumerWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.line2,
+                color: context.hs.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -54,11 +54,11 @@ class NfceResultBottomSheet extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.good.withOpacity(0.12),
+                      color: HsColors.soft(context.hs.good),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.check_circle_outline,
-                        color: AppColors.good, size: 22),
+                    child: Icon(Icons.check_circle_outline,
+                        color: context.hs.good, size: 22),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -72,8 +72,8 @@ class NfceResultBottomSheet extends ConsumerWidget {
                         ),
                         Text(
                           result.emitente,
-                          style: const TextStyle(
-                              color: AppColors.textSecondary, fontSize: 13),
+                          style:
+                              TextStyle(color: context.hs.text2, fontSize: 13),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
@@ -87,7 +87,7 @@ class NfceResultBottomSheet extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 'Toque em um item para editar, religar a um produto existente ou ignorar.',
-                style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
+                style: TextStyle(fontSize: 11, color: context.hs.muted),
               ),
             ),
             const SizedBox(height: 8),
@@ -124,9 +124,8 @@ class NfceResultBottomSheet extends ConsumerWidget {
                                   Text(
                                     '${item.quantidade.toStringAsFixed(item.quantidade == item.quantidade.roundToDouble() ? 0 : 3)} ${item.unidade}  ×  ${item.valorUnitario.toBRL()}'
                                     '${item.ignored ? '  ·  ignorado' : ''}',
-                                    style: const TextStyle(
-                                        fontSize: 11,
-                                        color: AppColors.textSecondary),
+                                    style: TextStyle(
+                                        fontSize: 11, color: context.hs.text2),
                                   ),
                                 ],
                               ),
@@ -137,8 +136,8 @@ class NfceResultBottomSheet extends ConsumerWidget {
                                   fontWeight: FontWeight.w700, fontSize: 13),
                             ),
                             const SizedBox(width: 6),
-                            const Icon(Icons.edit_outlined,
-                                size: 16, color: AppColors.textTertiary),
+                            Icon(Icons.edit_outlined,
+                                size: 16, color: context.hs.muted),
                           ],
                         ),
                       ),
@@ -157,10 +156,10 @@ class NfceResultBottomSheet extends ConsumerWidget {
                       style: TextStyle(fontWeight: FontWeight.w700)),
                   Text(
                     result.valorTotal.toBRL(),
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
-                        color: AppColors.accent),
+                        color: context.hs.primary),
                   ),
                 ],
               ),
@@ -239,7 +238,7 @@ class _ItemEditorSheetState extends ConsumerState<_ItemEditorSheet> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.hs.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -301,7 +300,7 @@ class _ItemEditorSheetState extends ConsumerState<_ItemEditorSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.line2,
+                color: context.hs.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -346,12 +345,12 @@ class _ItemEditorSheetState extends ConsumerState<_ItemEditorSheet> {
           ElevatedButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(
+                ? SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Color(0xFF0A0A0A),
+                      color: context.hs.onPrimary,
                     ),
                   )
                 : const Text('Salvar'),

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import '../providers/stock_exit_provider.dart';
 import '../widgets/product_selector_widget.dart';
@@ -93,13 +93,13 @@ class _StockExitPageState extends ConsumerState<StockExitPage> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: state.selectedProduct!.isOutOfStock
-                      ? AppColors.danger.withOpacity(0.08)
-                      : AppColors.accentSoft,
+                      ? HsColors.soft(context.hs.bad)
+                      : context.hs.primarySoft,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: state.selectedProduct!.isOutOfStock
-                        ? AppColors.danger.withOpacity(0.3)
-                        : AppColors.accentLine,
+                        ? context.hs.bad.withValues(alpha: 0.35)
+                        : context.hs.primaryLine,
                   ),
                 ),
                 child: Column(
@@ -117,17 +117,17 @@ class _StockExitPageState extends ConsumerState<StockExitPage> {
                       style: TextStyle(
                         fontSize: 13,
                         color: state.selectedProduct!.isOutOfStock
-                            ? AppColors.danger
-                            : AppColors.textSecondary,
+                            ? context.hs.bad
+                            : context.hs.text2,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     if (state.selectedProduct!.isOutOfStock)
-                      const Text(
+                      Text(
                         '⚠ Produto sem estoque disponível',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.danger,
+                          color: context.hs.bad,
                         ),
                       ),
                   ],
@@ -169,14 +169,14 @@ class _StockExitPageState extends ConsumerState<StockExitPage> {
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Row(
-                        children: const [
+                        children: [
                           Icon(Icons.warning_amber_rounded,
-                              color: AppColors.danger, size: 16),
-                          SizedBox(width: 6),
+                              color: context.hs.bad, size: 16),
+                          const SizedBox(width: 6),
                           Text(
                             'Quantidade maior que o estoque!',
                             style: TextStyle(
-                              color: AppColors.danger,
+                              color: context.hs.bad,
                               fontSize: 12,
                             ),
                           ),
@@ -205,8 +205,8 @@ class _StockExitPageState extends ConsumerState<StockExitPage> {
             const SizedBox(height: 32),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                foregroundColor: Colors.white,
+                backgroundColor: context.hs.bad,
+                foregroundColor: context.hs.bg,
               ),
               onPressed: (state.saving ||
                       state.selectedProduct == null ||
@@ -217,8 +217,7 @@ class _StockExitPageState extends ConsumerState<StockExitPage> {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child:
-                          CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.remove_circle_outline),
               label: Text(

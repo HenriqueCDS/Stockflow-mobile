@@ -2,7 +2,7 @@
 // Wireframe: seção 01 (A hero minimal + B carrossel + C login)
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -57,9 +57,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   const Spacer(),
                   TextButton(
                     onPressed: () => context.go('/login'),
-                    child: const Text(
+                    child: Text(
                       'Pular',
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: context.hs.text2),
                     ),
                   ),
                 ],
@@ -106,10 +106,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     const SizedBox(height: 14),
                     GestureDetector(
                       onTap: () => context.go('/login'),
-                      child: const Text(
+                      child: Text(
                         'Já tenho conta',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.hs.text2,
                           fontSize: 13,
                         ),
                       ),
@@ -134,14 +134,14 @@ class _BrandMark extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: AppColors.accent,
+            color: context.hs.primary,
             borderRadius: BorderRadius.circular(7),
           ),
-          child: const Center(
+          child: Center(
             child: Text(
               'H',
               style: TextStyle(
-                color: Color(0xFF0A0A0A),
+                color: context.hs.onPrimary,
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
               ),
@@ -188,19 +188,19 @@ class _StepView extends StatelessWidget {
             height: 220,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColors.accentSoft,
+              color: context.hs.primarySoft,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.accentLine),
+              border: Border.all(color: context.hs.primaryLine),
             ),
             child: Center(
-              child: Icon(step.icon, size: 80, color: AppColors.accent),
+              child: Icon(step.icon, size: 80, color: context.hs.primary),
             ),
           ),
           const SizedBox(height: 36),
           Text(
             step.eyebrow,
-            style: const TextStyle(
-              color: AppColors.textTertiary,
+            style: TextStyle(
+              color: context.hs.muted,
               fontSize: 11,
               letterSpacing: 1.6,
               fontFamily: 'monospace',
@@ -219,9 +219,9 @@ class _StepView extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             step.body,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
-              color: AppColors.textSecondary,
+              color: context.hs.text2,
               height: 1.55,
             ),
           ),
@@ -243,7 +243,7 @@ class _Dot extends StatelessWidget {
       height: 7,
       margin: const EdgeInsets.symmetric(horizontal: 3),
       decoration: BoxDecoration(
-        color: active ? AppColors.accent : AppColors.surface2,
+        color: active ? context.hs.primary : context.hs.surface2,
         borderRadius: BorderRadius.circular(4),
       ),
     );

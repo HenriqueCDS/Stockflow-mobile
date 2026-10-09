@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../providers/scanner_provider.dart';
@@ -34,10 +34,8 @@ class _CameraScanPageState extends ConsumerState<CameraScanPage> {
 
   void _onDetect(BarcodeCapture capture) {
     if (_handled) return;
-    final url = capture.barcodes
-        .map((b) => b.rawValue)
-        .whereType<String>()
-        .firstOrNull;
+    final url =
+        capture.barcodes.map((b) => b.rawValue).whereType<String>().firstOrNull;
     if (url == null) return;
 
     _handled = true;
@@ -137,7 +135,7 @@ class _CameraScanPageState extends ConsumerState<CameraScanPage> {
                             ? Icons.flashlight_on
                             : Icons.flashlight_off,
                         color: value.torchState == TorchState.on
-                            ? AppColors.accent
+                            ? context.hs.primary
                             : Colors.white,
                       ),
                       style: IconButton.styleFrom(
@@ -156,20 +154,23 @@ class _CameraScanPageState extends ConsumerState<CameraScanPage> {
               width: 240,
               height: 240,
               child: CustomPaint(
-                painter: ScanBracketPainter(isActive: isProcessing),
+                painter: ScanBracketPainter(
+                  isActive: isProcessing,
+                  activeColor: context.hs.primary,
+                ),
               ),
             ),
           ),
 
           // Processing indicator
           if (isProcessing)
-            const Center(
+            Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(height: 260),
                   SizedBox(height: 20),
-                  CircularProgressIndicator(color: AppColors.accent),
+                  CircularProgressIndicator(color: context.hs.primary),
                   SizedBox(height: 12),
                   Text(
                     'Processando NFC-e…',
@@ -194,8 +195,8 @@ class _CameraScanPageState extends ConsumerState<CameraScanPage> {
                 const SizedBox(height: 6),
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 40),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(20),
@@ -204,8 +205,7 @@ class _CameraScanPageState extends ConsumerState<CameraScanPage> {
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.info_outline,
-                          size: 14, color: Colors.white54),
+                      Icon(Icons.info_outline, size: 14, color: Colors.white54),
                       SizedBox(width: 6),
                       Flexible(
                         child: Text(
@@ -234,7 +234,7 @@ class _VignettePainter extends CustomPainter {
     final rect = Rect.fromCenter(
         center: Offset(cx, cy), width: bracketSize, height: bracketSize);
 
-    final paint = Paint()..color = Colors.black.withOpacity(0.55);
+    final paint = Paint()..color = Colors.black.withValues(alpha: 0.55);
     final path = Path()
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
       ..addRRect(RRect.fromRectAndRadius(rect, const Radius.circular(8)))

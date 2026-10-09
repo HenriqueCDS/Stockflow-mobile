@@ -1,7 +1,7 @@
 // Wireframe 03-C: CTA "Pronta para escanear?" com instruções
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 
 class ScannerLandingPage extends StatelessWidget {
   const ScannerLandingPage({super.key});
@@ -23,13 +23,13 @@ class ScannerLandingPage extends StatelessWidget {
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: AppColors.accent.withOpacity(0.1),
+                    color: context.hs.primarySoft,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.qr_code_scanner,
                     size: 56,
-                    color: AppColors.accent,
+                    color: context.hs.primary,
                   ),
                 ),
               ),
@@ -40,11 +40,11 @@ class ScannerLandingPage extends StatelessWidget {
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 10),
-              const Text(
+              Text(
                 'Leia o QR Code da NFC-e (Nota Fiscal do Consumidor Eletrônica) para importar os itens automaticamente para o estoque.',
                 textAlign: TextAlign.center,
-                style:
-                    TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
+                style: TextStyle(
+                    fontSize: 14, color: context.hs.text2, height: 1.5),
               ),
               const SizedBox(height: 32),
               // Steps
@@ -91,14 +91,14 @@ class _StepItem extends StatelessWidget {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: AppColors.accent.withOpacity(0.12),
+            color: context.hs.primarySoft,
             borderRadius: BorderRadius.circular(8),
           ),
           alignment: Alignment.center,
           child: Text(
             number,
-            style: const TextStyle(
-                color: AppColors.accent,
+            style: TextStyle(
+                color: context.hs.primary,
                 fontWeight: FontWeight.w700,
                 fontSize: 14),
           ),
@@ -107,10 +107,8 @@ class _StepItem extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-                height: 1.4),
+            style:
+                TextStyle(fontSize: 13, color: context.hs.text2, height: 1.4),
           ),
         ),
       ],

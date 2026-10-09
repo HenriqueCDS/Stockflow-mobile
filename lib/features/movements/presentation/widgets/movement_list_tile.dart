@@ -1,6 +1,6 @@
 // Migrado de: src/pages/History.jsx (linhas da tabela de movimentações)
 import 'package:flutter/material.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import '../../domain/entities/movement_entity.dart';
 
@@ -15,12 +15,12 @@ class MovementListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, icon, label) = switch (movement.type) {
-      MovementType.entry => (AppColors.good, Icons.arrow_downward_rounded, 'Entrada'),
-      MovementType.used => (AppColors.danger, Icons.check_circle_outline, 'Usado'),
-      MovementType.discarded => (AppColors.danger, Icons.delete_outline, 'Descartado'),
-      MovementType.exit => (AppColors.danger, Icons.arrow_upward_rounded, 'Saída'),
-      MovementType.adjustment => (AppColors.accent, Icons.sync_rounded, 'Ajuste'),
-      MovementType.returnType => (AppColors.accent, Icons.undo_rounded, 'Devolução'),
+      MovementType.entry => (context.hs.good, Icons.arrow_downward_rounded, 'Entrada'),
+      MovementType.used => (context.hs.bad, Icons.check_circle_outline, 'Usado'),
+      MovementType.discarded => (context.hs.bad, Icons.delete_outline, 'Descartado'),
+      MovementType.exit => (context.hs.bad, Icons.arrow_upward_rounded, 'Saída'),
+      MovementType.adjustment => (context.hs.primary, Icons.sync_rounded, 'Ajuste'),
+      MovementType.returnType => (context.hs.primary, Icons.undo_rounded, 'Devolução'),
     };
 
     final isNegative = switch (movement.type) {
@@ -77,9 +77,9 @@ class MovementListTile extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       movement.movementDate.toLocaleDateTimePtBR(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.textTertiary,
+                        color: context.hs.muted,
                       ),
                     ),
                   ],
@@ -89,9 +89,9 @@ class MovementListTile extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 3),
                     child: Text(
                       movement.reason!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.textSecondary,
+                        color: context.hs.text2,
                       ),
                     ),
                   ),
@@ -112,9 +112,9 @@ class MovementListTile extends StatelessWidget {
               ),
               Text(
                 '${_fmt(movement.quantityBefore)} → ${_fmt(movement.quantityAfter)}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.textTertiary,
+                  color: context.hs.muted,
                   fontFamily: 'monospace',
                 ),
               ),

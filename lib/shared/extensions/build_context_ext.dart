@@ -1,25 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:intl/intl.dart' as intl;
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 
 extension AppSnackBar on BuildContext {
-  void showSuccess(String message) => _show(message, AppColors.good);
-  void showError(String message) => _show(message, AppColors.danger);
-  void showInfo(String message) => _show(message, AppColors.accent);
+  void showSuccess(String message) =>
+      _show(message, hs.good, Icons.check_circle_outline);
+  void showError(String message) => _show(message, hs.bad, Icons.error_outline);
+  void showInfo(String message) =>
+      _show(message, hs.primary, Icons.info_outline);
 
-  void _show(String message, Color color) {
+  void _show(String message, Color color, IconData icon) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: color.withOpacity(0.15),
+        content: Row(
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(message, style: TextStyle(color: hs.text)),
+            ),
+          ],
+        ),
+        backgroundColor: hs.surface2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(color: hs.border),
+        ),
         duration: const Duration(seconds: 3),
       ),
     );
   }
 }
 
+final _brl = intl.NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+
 extension CurrencyFormat on num {
   String toBRL() {
-    return 'R\$ ${toStringAsFixed(2).replaceAll('.', ',')}';
+    return _brl.format(this);
   }
 }
 

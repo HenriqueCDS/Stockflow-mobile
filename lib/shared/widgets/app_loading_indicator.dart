@@ -1,6 +1,6 @@
 // Novo – não existe no React como componente Flutter
 import 'package:flutter/material.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 
 class AppLoadingIndicator extends StatelessWidget {
   final String? text;
@@ -12,16 +12,16 @@ class AppLoadingIndicator extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircularProgressIndicator(
-            color: AppColors.accent,
+          CircularProgressIndicator(
+            color: context.hs.primary,
             strokeWidth: 2.5,
           ),
           if (text != null) ...[
             const SizedBox(height: 16),
             Text(
               text!,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.hs.text2,
                 fontSize: 13,
               ),
             ),

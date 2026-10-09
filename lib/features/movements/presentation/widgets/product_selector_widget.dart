@@ -2,7 +2,7 @@
 // Lista scrollável com busca inline → mesmo padrão nos wireframes
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import '../../../stock/domain/entities/product_entity.dart';
 import '../../../stock/presentation/providers/stock_provider.dart';
 
@@ -23,8 +23,7 @@ class ProductSelectorWidget extends ConsumerStatefulWidget {
       _ProductSelectorWidgetState();
 }
 
-class _ProductSelectorWidgetState
-    extends ConsumerState<ProductSelectorWidget> {
+class _ProductSelectorWidgetState extends ConsumerState<ProductSelectorWidget> {
   final _searchCtrl = TextEditingController();
 
   @override
@@ -48,18 +47,18 @@ class _ProductSelectorWidgetState
         TextField(
           controller: _searchCtrl,
           onChanged: (v) => setState(() {}),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'Digite o nome ou código…',
-            prefixIcon: Icon(Icons.search, size: 20, color: AppColors.textTertiary),
+            prefixIcon: Icon(Icons.search, size: 20, color: context.hs.muted),
           ),
         ),
         const SizedBox(height: 10),
         stockState.when(
-          loading: () => const Center(
+          loading: () => Center(
             child: Padding(
               padding: EdgeInsets.all(24),
               child: CircularProgressIndicator(
-                color: AppColors.accent,
+                color: context.hs.primary,
                 strokeWidth: 2,
               ),
             ),
@@ -75,12 +74,12 @@ class _ProductSelectorWidgetState
             }).toList();
 
             if (filtered.isEmpty) {
-              return const Padding(
+              return Padding(
                 padding: EdgeInsets.all(24),
                 child: Center(
                   child: Text(
                     'Nenhum produto encontrado',
-                    style: TextStyle(color: AppColors.textTertiary),
+                    style: TextStyle(color: context.hs.muted),
                   ),
                 ),
               );
@@ -90,8 +89,7 @@ class _ProductSelectorWidgetState
               height: 260,
               child: ListView.separated(
                 itemCount: filtered.length,
-                separatorBuilder: (_, __) =>
-                    const Divider(height: 1),
+                separatorBuilder: (_, __) => const Divider(height: 1),
                 itemBuilder: (_, i) {
                   final p = filtered[i];
                   final isSelected = widget.selected?.id == p.id;
@@ -104,10 +102,10 @@ class _ProductSelectorWidgetState
                           horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.accentSoft
+                            ? context.hs.primarySoft
                             : Colors.transparent,
                         border: isSelected
-                            ? Border.all(color: AppColors.accentLine)
+                            ? Border.all(color: context.hs.primaryLine)
                             : null,
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -115,8 +113,7 @@ class _ProductSelectorWidgetState
                         children: [
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   p.name,
@@ -128,9 +125,9 @@ class _ProductSelectorWidgetState
                                 const SizedBox(height: 3),
                                 Text(
                                   'Cód: ${p.ean ?? '—'}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
-                                    color: AppColors.textTertiary,
+                                    color: context.hs.muted,
                                     fontFamily: 'monospace',
                                   ),
                                 ),
@@ -143,8 +140,8 @@ class _ProductSelectorWidgetState
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: p.isOutOfStock
-                                  ? AppColors.danger
-                                  : AppColors.good,
+                                  ? context.hs.bad
+                                  : context.hs.good,
                             ),
                           ),
                         ],

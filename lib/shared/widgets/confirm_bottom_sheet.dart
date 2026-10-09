@@ -1,7 +1,7 @@
 // Migrado de: src/components/ConfirmModal.jsx
 // Modal centrado no web → bottom sheet no mobile (padrão Material)
 import 'package:flutter/material.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 
 Future<bool> showConfirmBottomSheet({
   required BuildContext context,
@@ -12,7 +12,7 @@ Future<bool> showConfirmBottomSheet({
 }) async {
   final result = await showModalBottomSheet<bool>(
     context: context,
-    backgroundColor: AppColors.surface,
+    backgroundColor: context.hs.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -52,7 +52,7 @@ class _ConfirmSheet extends StatelessWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.line2,
+                color: context.hs.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -64,14 +64,13 @@ class _ConfirmSheet extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: danger
-                      ? AppColors.danger.withOpacity(0.12)
-                      : AppColors.warn.withOpacity(0.12),
+                  color:
+                      HsColors.soft(danger ? context.hs.bad : context.hs.warn),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.warning_amber_rounded,
-                  color: danger ? AppColors.danger : AppColors.warn,
+                  color: danger ? context.hs.bad : context.hs.warn,
                   size: 22,
                 ),
               ),
@@ -90,9 +89,9 @@ class _ConfirmSheet extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             message,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: AppColors.textSecondary,
+              color: context.hs.text2,
               height: 1.55,
             ),
           ),
@@ -110,10 +109,11 @@ class _ConfirmSheet extends StatelessWidget {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        danger ? AppColors.danger : AppColors.accent,
-                    foregroundColor: danger
-                        ? Colors.white
-                        : const Color(0xFF0A0A0A),
+                        danger ? context.hs.bad : context.hs.primary,
+                    // bg sobre bad mantém contraste nos dois temas
+                    // (branco some sobre o #F87171 do escuro).
+                    foregroundColor:
+                        danger ? context.hs.bg : context.hs.onPrimary,
                   ),
                   onPressed: () => Navigator.pop(context, true),
                   child: Text(confirmLabel),
