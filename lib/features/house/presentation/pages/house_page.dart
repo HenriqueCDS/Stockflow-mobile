@@ -4,11 +4,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:go_router/go_router.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import 'package:homestock_mobile/shared/widgets/app_loading_indicator.dart';
 import 'package:homestock_mobile/shared/widgets/confirm_bottom_sheet.dart';
 import 'package:homestock_mobile/shared/widgets/error_state_widget.dart';
+import 'package:homestock_mobile/core/theme/theme_mode_provider.dart';
+import 'package:homestock_mobile/shared/widgets/hs_ui.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/company_entity.dart';
 import '../../domain/entities/member_entity.dart';
@@ -24,95 +27,234 @@ class HousePage extends ConsumerWidget {
         ref.watch(authStateProvider).valueOrNull?.user?.role == 'OWNER';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Minha casa')),
-      body: state.when(
-        loading: () => const AppLoadingIndicator(text: 'Carregando casa…'),
-        error: (e, _) => ErrorStateWidget(
-          message: e.toString(),
-          onRetry: () => ref.read(houseProvider.notifier).refresh(),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const PageTitle(title: 'Casa'),
+            Expanded(child: _body(context, ref, state, isOwner)),
+          ],
         ),
-        data: (house) => RefreshIndicator(
-          color: AppColors.accent,
-          backgroundColor: AppColors.surface,
-          onRefresh: () => ref.read(houseProvider.notifier).refresh(),
-          child: ListView(
-            padding: const EdgeInsets.all(22),
-            children: [
-              _CompanyForm(
-                company: house.company,
-                onSave: (data) async {
-                  try {
-                    await ref.read(houseProvider.notifier).updateCompany(data);
-                    if (context.mounted) {
-                      context.showSuccess('Dados da casa atualizados!');
-                    }
-                  } catch (e) {
-                    if (context.mounted) context.showError(e.toString());
+      ),
+    );
+  }
+
+  Widget _body(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<HouseState> state,
+    bool isOwner,
+  ) {
+    final user = ref.watch(authStateProvider).valueOrNull?.user;
+    return state.when(
+      loading: () => const AppLoadingIndicator(text: 'Carregando casa…'),
+      error: (e, _) => ErrorStateWidget(
+        message: e.toString(),
+        onRetry: () => ref.read(houseProvider.notifier).refresh(),
+      ),
+      data: (house) => RefreshIndicator(
+        onRefresh: () => ref.read(houseProvider.notifier).refresh(),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          children: [
+            _UserButton(
+              name: user?.name,
+              email: user?.email,
+              onTap: () => context.push('/user'),
+            ),
+            const SizedBox(height: 28),
+            const SectionLabel('Aparência'),
+            const SizedBox(height: 10),
+            const _ThemeModeSelector(),
+            const SizedBox(height: 28),
+            const SectionLabel('Dados da casa'),
+            const SizedBox(height: 12),
+            _CompanyForm(
+              company: house.company,
+              onSave: (data) async {
+                try {
+                  await ref.read(houseProvider.notifier).updateCompany(data);
+                  if (context.mounted) {
+                    context.showSuccess('Dados da casa atualizados!');
                   }
-                },
+                } catch (e) {
+                  if (context.mounted) context.showError(e.toString());
+                }
+              },
+            ),
+            const SizedBox(height: 24),
+            _InviteCodeCard(
+              inviteCode: house.company.inviteCode,
+              isOwner: isOwner,
+              onRotate: () async {
+                final confirmed = await showConfirmBottomSheet(
+                  context: context,
+                  title: 'Gerar novo código?',
+                  message:
+                      'O código atual deixará de funcionar. Quem ainda não entrou na casa precisará do novo código.',
+                  confirmLabel: 'Sim, gerar novo',
+                );
+                if (!confirmed) return;
+                try {
+                  await ref.read(houseProvider.notifier).rotateInviteCode();
+                  if (context.mounted) {
+                    context.showSuccess('Novo código gerado!');
+                  }
+                } catch (e) {
+                  if (context.mounted) context.showError(e.toString());
+                }
+              },
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'MEMBROS',
+              style: TextStyle(
+                color: context.hs.muted,
+                fontSize: 10,
+                letterSpacing: 1.4,
+                fontFamily: 'monospace',
               ),
-              const SizedBox(height: 24),
-              _InviteCodeCard(
-                inviteCode: house.company.inviteCode,
-                isOwner: isOwner,
-                onRotate: () async {
+            ),
+            const SizedBox(height: 10),
+            ...house.members.map(
+              (m) => _MemberTile(
+                member: m,
+                index: house.members.indexOf(m),
+                canRemove: isOwner && !m.isOwner,
+                onRemove: () async {
                   final confirmed = await showConfirmBottomSheet(
                     context: context,
-                    title: 'Gerar novo código?',
+                    title: 'Remover membro?',
                     message:
-                        'O código atual deixará de funcionar. Quem ainda não entrou na casa precisará do novo código.',
-                    confirmLabel: 'Sim, gerar novo',
+                        '"${m.name}" perderá acesso a esta casa imediatamente.',
+                    confirmLabel: 'Sim, remover',
+                    danger: true,
                   );
                   if (!confirmed) return;
                   try {
-                    await ref.read(houseProvider.notifier).rotateInviteCode();
+                    await ref.read(houseProvider.notifier).removeMember(m.id);
                     if (context.mounted) {
-                      context.showSuccess('Novo código gerado!');
+                      context.showSuccess('"${m.name}" removido.');
                     }
                   } catch (e) {
                     if (context.mounted) context.showError(e.toString());
                   }
                 },
               ),
-              const SizedBox(height: 24),
-              const Text(
-                'MEMBROS',
-                style: TextStyle(
-                  color: AppColors.textTertiary,
-                  fontSize: 10,
-                  letterSpacing: 1.4,
-                  fontFamily: 'monospace',
-                ),
-              ),
-              const SizedBox(height: 10),
-              ...house.members.map(
-                (m) => _MemberTile(
-                  member: m,
-                  canRemove: isOwner && !m.isOwner,
-                  onRemove: () async {
-                    final confirmed = await showConfirmBottomSheet(
-                      context: context,
-                      title: 'Remover membro?',
-                      message:
-                          '"${m.name}" perderá acesso a esta casa imediatamente.',
-                      confirmLabel: 'Sim, remover',
-                      danger: true,
-                    );
-                    if (!confirmed) return;
-                    try {
-                      await ref.read(houseProvider.notifier).removeMember(m.id);
-                      if (context.mounted) {
-                        context.showSuccess('"${m.name}" removido.');
-                      }
-                    } catch (e) {
-                      if (context.mounted) context.showError(e.toString());
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 28),
+            OutlinedButton.icon(
+              onPressed: () async {
+                final confirmed = await showConfirmBottomSheet(
+                  context: context,
+                  title: 'Sair da conta?',
+                  message: 'Você precisará entrar de novo para ver esta casa.',
+                  confirmLabel: 'Sair',
+                  danger: true,
+                );
+                if (confirmed) {
+                  await ref.read(authStateProvider.notifier).logout();
+                }
+              },
+              icon: Icon(Icons.logout_rounded, color: context.hs.bad),
+              label: Text('Sair', style: TextStyle(color: context.hs.bad)),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+/// Casa › botão "Usuário · Configurações" (abre a edição de nome e senha).
+class _UserButton extends StatelessWidget {
+  final String? name;
+  final String? email;
+  final VoidCallback onTap;
+
+  const _UserButton({this.name, this.email, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final hs = context.hs;
+    final hasName = (name ?? '').trim().isNotEmpty;
+    final subtitle = (email ?? '').isNotEmpty ? email! : 'Editar nome';
+    return Semantics(
+      button: true,
+      label: 'Usuário, configurações',
+      child: HsCard(
+        onTap: onTap,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            InitialsAvatar(name: hasName ? name! : '?', size: 40),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hasName ? name! : 'Usuário',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: hs.text,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: hs.muted),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              'Configurações',
+              style: TextStyle(fontSize: 13, color: hs.text2),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right_rounded, color: hs.muted),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Casa › Aparência: Sistema / Claro / Escuro (persistido).
+class _ThemeModeSelector extends ConsumerWidget {
+  const _ThemeModeSelector();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      width: double.infinity,
+      child: SegmentedButton<ThemeMode>(
+        showSelectedIcon: false,
+        segments: const [
+          ButtonSegment(
+            value: ThemeMode.system,
+            icon: Icon(Icons.brightness_auto_outlined, size: 18),
+            label: Text('Sistema'),
+          ),
+          ButtonSegment(
+            value: ThemeMode.light,
+            icon: Icon(Icons.light_mode_outlined, size: 18),
+            label: Text('Claro'),
+          ),
+          ButtonSegment(
+            value: ThemeMode.dark,
+            icon: Icon(Icons.dark_mode_outlined, size: 18),
+            label: Text('Escuro'),
+          ),
+        ],
+        selected: {ref.watch(themeModeProvider)},
+        onSelectionChanged: (s) =>
+            ref.read(themeModeProvider.notifier).set(s.first),
       ),
     );
   }
@@ -188,12 +330,12 @@ class _CompanyFormState extends State<_CompanyForm> {
         ElevatedButton(
           onPressed: _saving ? null : _save,
           child: _saving
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Color(0xFF0A0A0A),
+                    color: context.hs.onPrimary,
                   ),
                 )
               : const Text('Salvar alterações'),
@@ -220,17 +362,17 @@ class _InviteCodeCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: context.hs.primarySoft,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accentLine),
+        border: Border.all(color: context.hs.primaryLine),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'CÓDIGO DE CONVITE',
             style: TextStyle(
-              color: AppColors.textTertiary,
+              color: context.hs.muted,
               fontSize: 10,
               letterSpacing: 1.4,
               fontFamily: 'monospace',
@@ -242,16 +384,16 @@ class _InviteCodeCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   inviteCode,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.2,
-                    color: AppColors.accent,
+                    color: context.hs.primary,
                   ),
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.copy_rounded, color: AppColors.accent),
+                icon: Icon(Icons.copy_rounded, color: context.hs.primary),
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: inviteCode));
                   if (context.mounted) {
@@ -263,7 +405,7 @@ class _InviteCodeCard extends StatelessWidget {
           ),
           Text(
             'Compartilhe este código para que alguém entre na sua casa.',
-            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 12, color: context.hs.text2),
           ),
           if (isOwner) ...[
             const SizedBox(height: 12),
@@ -281,11 +423,13 @@ class _InviteCodeCard extends StatelessWidget {
 
 class _MemberTile extends StatelessWidget {
   final MemberEntity member;
+  final int index;
   final bool canRemove;
   final VoidCallback onRemove;
 
   const _MemberTile({
     required this.member,
+    required this.index,
     required this.canRemove,
     required this.onRemove,
   });
@@ -296,16 +440,7 @@ class _MemberTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              color: AppColors.surface2,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.person_outline,
-                size: 18, color: AppColors.textSecondary),
-          ),
+          InitialsAvatar(name: member.name, index: index, size: 36),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -315,32 +450,17 @@ class _MemberTile extends StatelessWidget {
                     style: const TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w600)),
                 Text(member.email,
-                    style: const TextStyle(
-                        fontSize: 12, color: AppColors.textTertiary)),
+                    style: TextStyle(fontSize: 12, color: context.hs.muted)),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: (member.isOwner ? AppColors.accent : AppColors.surface2)
-                  .withOpacity(member.isOwner ? 0.15 : 1),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              member.isOwner ? 'OWNER' : 'MEMBER',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: member.isOwner
-                    ? AppColors.accent
-                    : AppColors.textSecondary,
-              ),
-            ),
+          StatusBadge(
+            label: member.isOwner ? 'Dono' : 'Membro',
+            color: member.isOwner ? context.hs.primaryInk : context.hs.text2,
           ),
           if (canRemove)
             IconButton(
-              icon: const Icon(Icons.close, size: 18, color: AppColors.danger),
+              icon: Icon(Icons.close, size: 18, color: context.hs.bad),
               onPressed: onRemove,
             ),
         ],
