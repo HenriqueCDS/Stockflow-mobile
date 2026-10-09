@@ -1,6 +1,7 @@
 // Novo – não existe no React
 // Wireframe: seção 01-C (login com e-mail/senha + Google)
 import 'package:flutter/material.dart';
+import 'package:homestock_mobile/shared/widgets/hs_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:homestock_mobile/core/theme/hs_colors.dart';
@@ -54,36 +55,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               children: [
                 const SizedBox(height: 12),
                 // Brand
-                Row(
-                  children: [
-                    Container(
-                      width: 26,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        color: context.hs.primary,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'H',
-                          style: TextStyle(
-                            color: context.hs.onPrimary,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'HomeStock',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
+                const BrandMark(size: 26, fontSize: 14),
                 const SizedBox(height: 48),
                 Text(
                   'ENTRAR',
@@ -109,8 +81,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(labelText: 'E-mail'),
-                  validator: (v) =>
-                      (v == null || !v.contains('@')) ? 'E-mail inválido' : null,
+                  validator: (v) => (v == null || !v.contains('@'))
+                      ? 'E-mail inválido'
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -129,8 +102,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
-                  validator: (v) =>
-                      (v == null || v.length < 6) ? 'Mínimo 6 caracteres' : null,
+                  validator: (v) => (v == null || v.length < 6)
+                      ? 'Mínimo 6 caracteres'
+                      : null,
                 ),
                 const SizedBox(height: 28),
                 ElevatedButton(

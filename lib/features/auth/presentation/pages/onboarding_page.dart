@@ -1,6 +1,7 @@
 // Novo – não existe no React
 // Wireframe: seção 01 (A hero minimal + B carrossel + C login)
 import 'package:flutter/material.dart';
+import 'package:homestock_mobile/shared/widgets/hs_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:homestock_mobile/core/theme/hs_colors.dart';
 
@@ -19,7 +20,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _Step(
       eyebrow: 'PASSO 01',
       title: 'Escaneou a nota,\nestoque atualizado.',
-      body: 'Aponte para o QR da NFC-e e a gente cuida do resto. Nada de digitar item por item.',
+      body:
+          'Aponte para o QR da NFC-e e a gente cuida do resto. Nada de digitar item por item.',
       icon: Icons.qr_code_scanner,
     ),
     _Step(
@@ -31,7 +33,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _Step(
       eyebrow: 'PASSO 03',
       title: 'Acompanhe.',
-      body: 'Métricas, alertas de validade e estoque baixo — tudo em um só lugar.',
+      body:
+          'Métricas, alertas de validade e estoque baixo — tudo em um só lugar.',
       icon: Icons.bar_chart_rounded,
     ),
   ];
@@ -53,7 +56,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
               child: Row(
                 children: [
-                  _BrandMark(),
+                  const BrandMark(),
                   const Spacer(),
                   TextButton(
                     onPressed: () => context.go('/login'),
@@ -121,39 +124,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _BrandMark extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: context.hs.primary,
-            borderRadius: BorderRadius.circular(7),
-          ),
-          child: Center(
-            child: Text(
-              'H',
-              style: TextStyle(
-                color: context.hs.onPrimary,
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        const Text(
-          'HomeStock',
-          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
-        ),
-      ],
     );
   }
 }
