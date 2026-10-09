@@ -1,80 +1,78 @@
+// Item de notificação (HomeStock.pdf · Notificações): ponto na cor do status,
+// frase curta, detalhe monoespaçado e ação "Ver".
 import 'package:flutter/material.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import '../../domain/entities/alert_entity.dart';
 
 class AlertListTile extends StatelessWidget {
   final AlertEntity alert;
-  const AlertListTile({super.key, required this.alert});
+  final VoidCallback? onView;
+
+  const AlertListTile({super.key, required this.alert, this.onView});
 
   @override
   Widget build(BuildContext context) {
-    final (color, icon) = switch (alert.type) {
-      AlertType.outOfStock => (AppColors.danger, Icons.remove_shopping_cart_outlined),
-      AlertType.lowStock => (AppColors.warn, Icons.inventory_2_outlined),
-      AlertType.nearExpiry => (AppColors.warn, Icons.event_busy_outlined),
-      AlertType.expired => (AppColors.danger, Icons.dangerous_outlined),
-    };
-
-    final severityDot = switch (alert.severity) {
-      AlertSeverity.critical => AppColors.danger,
-      AlertSeverity.warning => AppColors.warn,
-      AlertSeverity.info => AppColors.accent,
+    final hs = context.hs;
+    final (color, headline) = switch (alert.type) {
+      AlertType.outOfStock => (hs.bad, '${alert.productName} acabou'),
+      AlertType.lowStock => (hs.bad, '${alert.productName} está acabando'),
+      AlertType.nearExpiry => (hs.warn, '${alert.productName} vence logo'),
+      AlertType.expired => (hs.bad, '${alert.productName} venceu'),
     };
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
-            child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        alert.productName,
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: severityDot,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 3),
                 Text(
-                  alert.title,
+                  headline,
                   style: TextStyle(
-                      fontSize: 12,
-                      color: color,
-                      fontWeight: FontWeight.w600),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: hs.text,
+                  ),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   alert.subtitle,
-                  style: const TextStyle(
-                      fontSize: 11, color: AppColors.textTertiary),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: hs.muted,
+                    fontFamily: 'monospace',
+                  ),
                 ),
               ],
             ),
           ),
+          if (onView != null) ...[
+            const SizedBox(width: 12),
+            OutlinedButton(
+              onPressed: onView,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(0, 34),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                shape: const StadiumBorder(),
+                backgroundColor: hs.surface2,
+                textStyle:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              ),
+              child: const Text('Ver'),
+            ),
+          ],
         ],
       ),
     );
