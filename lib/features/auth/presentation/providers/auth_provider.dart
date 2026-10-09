@@ -69,6 +69,12 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         ));
   }
 
+  /// Salva o nome no servidor e atualiza o usuário em memória (saudação, etc.).
+  Future<void> updateName(String name) async {
+    final updated = await ref.read(_authRepoProvider).updateName(name);
+    state = AsyncData(AuthState.authenticated(updated));
+  }
+
   Future<void> logout() async {
     final useCase = LogoutUseCase(ref.read(_authRepoProvider));
     await useCase();

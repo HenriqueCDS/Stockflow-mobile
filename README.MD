@@ -122,6 +122,8 @@ Este repositório contém somente o aplicativo mobile. A API REST roda em um pro
 |---|---|---|
 | `POST` | `/auth/login` | Login |
 | `POST` | `/auth/logout` | Logout |
+| `GET` | `/users/me` | Perfil do usuário do token (`id`, `name`, `email`, `role`); restaura a sessão |
+| `PUT` | `/users/me` | Edita o nome do usuário (`name`, até 100 caracteres) |
 | `GET` | `/dashboard` | Dados da tela inicial |
 | `GET` | `/products` | Listagem de produtos (com filtros) |
 | `GET` | `/products/{id}` | Detalhe de produto |

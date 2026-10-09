@@ -15,5 +15,6 @@ abstract interface class AuthRepository {
     required String inviteCode,
   });
   Future<void> logout();
+  Future<UserEntity> updateName(String name);
   Future<AuthState> restoreSession();
 }
