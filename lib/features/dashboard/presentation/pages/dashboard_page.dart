@@ -1,17 +1,25 @@
 // Migrado de: src/pages/Dashboard.jsx + src/pages/Reports.jsx
-// Padrão: useState/useEffect local → ref.watch(dashboardProvider)
-// Wireframe: seção 02 (A hero scan + B stats grid + C timeline)
+// Layout HomeStock.pdf · Dashboard: saudação + casa, gasto do mês / na lista,
+// "acabando", locais (categorias) e atividade recente.
+// O /dashboard só devolve contagens; listas vêm de stockProvider e
+// shoppingListProvider (mesma fonte das outras abas).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:homestock_mobile/core/theme/app_colors.dart';
+import 'package:homestock_mobile/core/theme/hs_colors.dart';
 import 'package:homestock_mobile/shared/extensions/build_context_ext.dart';
 import 'package:homestock_mobile/shared/widgets/app_loading_indicator.dart';
 import 'package:homestock_mobile/shared/widgets/error_state_widget.dart';
+import 'package:homestock_mobile/shared/widgets/hs_ui.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../house/presentation/providers/house_provider.dart';
+import '../../../movements/domain/entities/movement_entity.dart';
+import '../../../movements/presentation/providers/movements_provider.dart';
+import '../../../movements/presentation/widgets/movement_author.dart';
+import '../../../shopping_list/presentation/providers/shopping_list_provider.dart';
+import '../../../stock/domain/entities/product_entity.dart';
 import '../../../stock/presentation/providers/stock_provider.dart';
 import '../providers/dashboard_provider.dart';
-import '../widgets/stat_card_widget.dart';
-import '../widgets/expiring_alert_card.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -19,270 +27,109 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(dashboardProvider);
-    // /dashboard só devolve a CONTAGEM de itens em baixa/sem estoque; as
-    // prévias com nome+quantidade vêm da lista de produtos já carregada
-    // (mesma fonte usada em Alerts).
     final products = ref.watch(stockProvider).valueOrNull ?? [];
-    final lowStockPreview = products.where((p) => p.isLowStock).toList();
-    final outOfStockPreview = products.where((p) => p.isOutOfStock).toList();
+    final shopping = ref.watch(shoppingListProvider).valueOrNull ?? [];
+    final house = ref.watch(houseProvider).valueOrNull;
+    final members = house?.members ?? const [];
+    final recent = [...?ref.watch(movementsProvider(null)).valueOrNull]
+      ..sort((a, b) => b.movementDate.compareTo(a.movementDate));
+    final user = ref.watch(authStateProvider).valueOrNull?.user;
+
+    final firstName = (user?.name ?? '').trim().split(' ').first;
+    final runningOut = products.where((p) => p.isRunningOut).toList()
+      ..sort((a, b) => a.currentStock.compareTo(b.currentStock));
+    final pending = shopping.where((i) => !i.checked).toList();
 
     return Scaffold(
       body: SafeArea(
+        bottom: false,
         child: RefreshIndicator(
-          color: AppColors.accent,
-          backgroundColor: AppColors.surface,
           onRefresh: () => Future.wait([
             ref.read(dashboardProvider.notifier).refresh(),
             ref.refresh(stockProvider.future),
+            ref.refresh(shoppingListProvider.future),
+            ref.read(movementsProvider(null).notifier).refresh(),
           ]),
-          child: CustomScrollView(
-            slivers: [
-              // ── Header ──────────────────────────────────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 20, 22, 0),
-                  child: Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Olá 👋',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'Meu Estoque',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: AppColors.surface2,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.line),
-                        ),
-                        child: const Icon(
-                          Icons.person_outline,
-                          size: 20,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+            children: [
+              _Header(
+                greeting: firstName.isEmpty ? 'Olá' : 'Oi, $firstName',
+                houseName: house?.company.name ?? 'Minha casa',
+                members: house?.members.map((m) => m.name).toList() ?? [],
+                hasAlerts: runningOut.isNotEmpty,
               ),
-
-              // ── Quick Action: Scanner ────────────────────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 20, 22, 0),
-                  child: GestureDetector(
-                    onTap: () => context.push('/scan/camera'),
-                    child: Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: AppColors.accentSoft,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.accentLine,
-                          style: BorderStyle.solid,
-                        ),
-                      ),
+              const SizedBox(height: 20),
+              state.when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.only(top: 48),
+                  child: AppLoadingIndicator(text: 'Carregando informações…'),
+                ),
+                error: (e, _) => ErrorStateWidget(
+                  message: e.toString(),
+                  onRetry: () => ref.read(dashboardProvider.notifier).refresh(),
+                ),
+                data: (dash) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    IntrinsicHeight(
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: AppColors.accent,
-                              borderRadius: BorderRadius.circular(13),
-                            ),
-                            child: const Icon(
-                              Icons.qr_code_scanner,
-                              color: Color(0xFF0A0A0A),
-                              size: 26,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Escanear NFC-e',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  'Atualize o estoque em segundos',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
+                            child: _StatCard(
+                              label: 'Gasto no mês',
+                              value: dash.monthlySpend.toBRL(),
+                              caption: '${dash.totalInvoices} notas escaneadas',
+                              highlighted: true,
+                              onTap: () => context.push('/scan'),
                             ),
                           ),
-                          const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 14,
-                            color: AppColors.accent,
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _StatCard(
+                              label: 'Na lista',
+                              value: '${pending.length}',
+                              caption:
+                                  '${pending.where((i) => i.isAutoSynced).length} adicionados auto',
+                              onTap: () => context.go('/shopping-list'),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ),
-              ),
-
-              // ── Stats / Content ──────────────────────────────────────────
-              SliverToBoxAdapter(
-                child: state.when(
-                  loading: () => const Padding(
-                    padding: EdgeInsets.only(top: 48),
-                    child: AppLoadingIndicator(text: 'Carregando informações…'),
-                  ),
-                  error: (e, _) => Padding(
-                    padding: const EdgeInsets.only(top: 32),
-                    child: ErrorStateWidget(
-                      message: e.toString(),
-                      onRetry: () =>
-                          ref.read(dashboardProvider.notifier).refresh(),
-                    ),
-                  ),
-                  data: (dash) => Padding(
-                    padding: const EdgeInsets.all(22),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Valor total destaque
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 18),
-                          decoration: BoxDecoration(
-                            color: AppColors.accentSoft,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.accentLine),
+                    const SizedBox(height: 12),
+                    if (runningOut.isNotEmpty) ...[
+                      _RunningOutCard(products: runningOut),
+                      const SizedBox(height: 24),
+                    ],
+                    if (products.isNotEmpty) ...[
+                      const SectionLabel('Locais'),
+                      const SizedBox(height: 10),
+                      _PlacesGrid(products: products),
+                      const SizedBox(height: 24),
+                    ],
+                    const SectionLabel('Atalhos'),
+                    const SizedBox(height: 10),
+                    const _Shortcuts(),
+                    if (recent.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      const SectionLabel('Atividade'),
+                      const SizedBox(height: 6),
+                      ...recent.take(5).map((m) {
+                        final author = authorOf(m.createdBy, members);
+                        return _ActivityRow(
+                          movement: m,
+                          author: author,
+                          onTap: () => showMovementDetailSheet(
+                            context,
+                            movement: m,
+                            author: author,
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'GASTO DO MÊS',
-                                style: TextStyle(
-                                  color: AppColors.textTertiary,
-                                  fontSize: 10,
-                                  letterSpacing: 1.4,
-                                  fontFamily: 'monospace',
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                dash.monthlySpend.toBRL(),
-                                style: const TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.5,
-                                  color: AppColors.accent,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Stats grid 4
-                        GridView.count(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                          childAspectRatio: 1.6,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          children: [
-                            StatCardWidget(
-                              label: 'Total de produtos',
-                              value: '${dash.totalProducts}',
-                              highlighted: true,
-                              valueColor: AppColors.accent,
-                            ),
-                            StatCardWidget(
-                              label: 'Produtos ativos',
-                              value: '${dash.activeProducts}',
-                              valueColor: AppColors.good,
-                            ),
-                            StatCardWidget(
-                              label: 'Estoque baixo',
-                              value: '${dash.lowStockProducts}',
-                              valueColor: AppColors.warn,
-                            ),
-                            StatCardWidget(
-                              label: 'Sem estoque',
-                              value: '${outOfStockPreview.length}',
-                              valueColor: AppColors.danger,
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Alertas de estoque baixo
-                        if (lowStockPreview.isNotEmpty)
-                          LowStockAlertCard(
-                            title: 'ESTOQUE BAIXO',
-                            products: lowStockPreview,
-                            color: AppColors.warn,
-                            bgColor: const Color(0x14D97706),
-                            icon: Icons.warning_amber_rounded,
-                            onViewAll: () => context.go('/alerts'),
-                          ),
-
-                        if (outOfStockPreview.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          LowStockAlertCard(
-                            title: 'SEM ESTOQUE',
-                            products: outOfStockPreview,
-                            color: AppColors.danger,
-                            bgColor: const Color(0x14D92D20),
-                            icon: Icons.trending_down_rounded,
-                            onViewAll: () => context.go('/alerts'),
-                          ),
-                        ],
-
-                        const SizedBox(height: 20),
-
-                        // Ações rápidas
-                        const Text(
-                          'AÇÕES RÁPIDAS',
-                          style: TextStyle(
-                            color: AppColors.textTertiary,
-                            fontSize: 10,
-                            letterSpacing: 1.4,
-                            fontFamily: 'monospace',
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _QuickActions(),
-                      ],
-                    ),
-                  ),
+                        );
+                      }),
+                    ],
+                  ],
                 ),
               ),
             ],
@@ -293,56 +140,381 @@ class DashboardPage extends ConsumerWidget {
   }
 }
 
-class _QuickActions extends StatelessWidget {
+class _Header extends StatelessWidget {
+  final String greeting;
+  final String houseName;
+  final List<String> members;
+  final bool hasAlerts;
+
+  const _Header({
+    required this.greeting,
+    required this.houseName,
+    required this.members,
+    required this.hasAlerts,
+  });
+
   @override
   Widget build(BuildContext context) {
-    final actions = [
-      (Icons.add_box_outlined, 'Dar Entrada', AppColors.good, '/stock/entry'),
-      (Icons.remove_circle_outline, 'Registrar Saída', AppColors.danger,
-          '/stock/exit'),
-      (Icons.inventory_2_outlined, 'Produtos', AppColors.accent, '/stock'),
-      (Icons.history, 'Histórico', AppColors.textSecondary, '/stock/history'),
-    ];
-
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      childAspectRatio: 2.2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      children: actions
-          .map(
-            (a) => GestureDetector(
-              onTap: () => context.push(a.$4),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.line),
+    final hs = context.hs;
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(greeting, style: TextStyle(color: hs.muted, fontSize: 13)),
+              const SizedBox(height: 2),
+              Text(
+                houseName,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: hs.text,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
                 ),
+              ),
+            ],
+          ),
+        ),
+        GestureDetector(
+          onTap: () => context.go('/house'),
+          child: AvatarStack(names: members),
+        ),
+        const SizedBox(width: 6),
+        IconButton(
+          tooltip: 'Notificações',
+          onPressed: () => context.push('/alerts'),
+          icon: Badge(
+            isLabelVisible: hasAlerts,
+            backgroundColor: hs.primary,
+            smallSize: 8,
+            child: Icon(Icons.notifications_none_rounded, color: hs.text),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final String caption;
+  final bool highlighted;
+  final VoidCallback? onTap;
+
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.caption,
+    this.highlighted = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hs = context.hs;
+    return HsCard(
+      highlighted: highlighted,
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionLabel(label),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.8,
+                color: highlighted ? hs.primary : hs.text,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(caption, style: TextStyle(fontSize: 12, color: hs.text2)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Card "Acabando" (equivalente ao "Vence logo" do PDF; a API não expõe validade).
+class _RunningOutCard extends ConsumerWidget {
+  final List<ProductEntity> products;
+
+  const _RunningOutCard({required this.products});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hs = context.hs;
+    final shown = products.take(4).toList();
+    return HsCard(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+      child: Column(
+        children: [
+          SectionLabel(
+            'Acabando',
+            color: hs.bad,
+            trailing: Text(
+              '${products.length} ${products.length == 1 ? 'item' : 'itens'}',
+              style: TextStyle(fontSize: 12, color: hs.muted),
+            ),
+          ),
+          const SizedBox(height: 6),
+          for (var i = 0; i < shown.length; i++) ...[
+            Divider(height: 1, color: hs.border),
+            InkWell(
+              onTap: () => context.push('/stock/${shown[i].id}/edit'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Row(
                   children: [
-                    Icon(a.$1, size: 20, color: a.$3),
-                    const SizedBox(width: 10),
                     Expanded(
-                      child: Text(
-                        a.$2,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            shown[i].name,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 14, color: hs.text),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            shown[i].categoryLabel,
+                            style: TextStyle(fontSize: 12, color: hs.muted),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      shown[i].isOutOfStock
+                          ? 'acabou'
+                          : '${shown[i].displayStock} ${shown[i].unit ?? 'un'}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: hs.bad,
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          )
-          .toList(),
+          ],
+          if (products.length > shown.length) ...[
+            Divider(height: 1, color: hs.border),
+            TextButton(
+              onPressed: () {
+                ref.read(stockFilterProvider.notifier).state =
+                    const StockFilterRunningOut();
+                context.go('/stock');
+              },
+              child: const Text('Ver todos'),
+            ),
+          ] else
+            const SizedBox(height: 8),
+        ],
+      ),
     );
+  }
+}
+
+/// Grade "Locais": um card por categoria com total e quantos estão acabando.
+class _PlacesGrid extends ConsumerWidget {
+  final List<ProductEntity> products;
+
+  const _PlacesGrid({required this.products});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hs = context.hs;
+    final groups = <String, List<ProductEntity>>{};
+    for (final p in products) {
+      groups.putIfAbsent(p.categoryLabel, () => []).add(p);
+    }
+    final entries = groups.entries.toList()
+      ..sort((a, b) => b.value.length.compareTo(a.value.length));
+
+    return LayoutBuilder(
+      builder: (context, c) {
+        final w = (c.maxWidth - 10) / 2;
+        return Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: entries.take(6).map((e) {
+            final out = e.value.where((p) => p.isRunningOut).length;
+            return SizedBox(
+              width: w,
+              child: HsCard(
+                onTap: () {
+                  ref.read(stockFilterProvider.notifier).state =
+                      StockFilterCategory(e.key);
+                  context.go('/stock');
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      e.key,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: hs.text,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      [
+                        '${e.value.length} ${e.value.length == 1 ? 'item' : 'itens'}',
+                        if (out > 0) '$out acabando',
+                      ].join(' · '),
+                      style: TextStyle(fontSize: 12, color: hs.text2),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+}
+
+class _Shortcuts extends StatelessWidget {
+  const _Shortcuts();
+
+  @override
+  Widget build(BuildContext context) {
+    final hs = context.hs;
+    final items = [
+      (Icons.add_box_outlined, 'Entrada', '/stock/entry'),
+      (Icons.indeterminate_check_box_outlined, 'Saída', '/stock/exit'),
+      (Icons.history_rounded, 'Histórico', '/stock/history'),
+    ];
+    return Row(
+      children: [
+        for (var i = 0; i < items.length; i++) ...[
+          if (i > 0) const SizedBox(width: 10),
+          Expanded(
+            child: HsCard(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              onTap: () => context.push(items[i].$3),
+              child: Column(
+                children: [
+                  Icon(items[i].$1, size: 22, color: hs.text2),
+                  const SizedBox(height: 6),
+                  Text(
+                    items[i].$2,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: hs.text,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Linha de atividade: "Rafael deu entrada em Arroz 5kg", detalhe e tempo.
+/// Toque abre os detalhes completos da movimentação.
+class _ActivityRow extends StatelessWidget {
+  final MovementEntity movement;
+  final MovementAuthor author;
+  final VoidCallback onTap;
+
+  const _ActivityRow({
+    required this.movement,
+    required this.author,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hs = context.hs;
+    final m = movement;
+    final color = movementColor(context, m.type);
+    final sign = movementReducesStock(m.type) ? '−' : '+';
+    final when = DateTime.tryParse(m.movementDate);
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            InitialsAvatar(
+              name: author.name ?? '?',
+              index: author.index,
+              size: 34,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: author.label,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        TextSpan(text: ' ${movementVerb(m.type)} '),
+                        TextSpan(
+                          text: m.productName,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 14, color: hs.text),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '${movementLabel(m.type)} · $sign${fmtQty(m.quantity)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: color,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (when != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                _relative(when),
+                style: TextStyle(fontSize: 12, color: hs.muted),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  static String _relative(DateTime t) {
+    final d = DateTime.now().difference(t.toLocal());
+    if (d.inMinutes < 1) return 'agora';
+    if (d.inHours < 1) return '${d.inMinutes}min';
+    if (d.inDays < 1) return '${d.inHours}h';
+    return '${d.inDays}d';
   }
 }
